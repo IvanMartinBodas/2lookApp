@@ -1,0 +1,200 @@
+:root {
+  --ion-color-primary: #1a3a5c;
+  --ion-color-primary-rgb: 26, 58, 92;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #173351;
+  --ion-color-primary-tint: #314e6c;
+
+  --ion-color-secondary: #2d5986;
+  --ion-color-secondary-rgb: 45, 89, 134;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #284e76;
+  --ion-color-secondary-tint: #426a92;
+
+  --ion-color-tertiary: #3a7bd5;
+  --ion-color-tertiary-rgb: 58, 123, 213;
+
+  --ion-color-success: #2dd36f;
+  --ion-color-warning: #ffc409;
+  --ion-color-danger: #eb445a;
+  --ion-color-medium: #92949c;
+  --ion-color-light: #f4f5f8;
+
+  
+  --app-bg-dark: #0d1b2a;
+  --app-bg-mid: #1a2d42;
+  --app-bg-card: #1e3450;
+  --app-bg-input: #162233;
+  --app-accent: #4a8fe8;
+  --app-accent-hover: #5fa0f5;
+  --app-text-primary: #ffffff;
+  --app-text-secondary: #8bacc8;
+  --app-text-muted: #5a7a9a;
+  --app-star: #f5c518;
+  --app-border: rgba(255,255,255,0.08);
+
+  --ion-background-color: var(--app-bg-dark);
+  --ion-background-color-rgb: 13, 27, 42;
+  --ion-text-color: var(--app-text-primary);
+  --ion-text-color-rgb: 255, 255, 255;
+
+  --ion-font-family: 'DM Sans', sans-serif;
+
+  --ion-toolbar-background: var(--app-bg-dark);
+  --ion-toolbar-color: #ffffff;
+  --ion-tab-bar-background: #0d1b2a;
+  --ion-tab-bar-border-color: rgba(255,255,255,0.06);
+  --ion-tab-bar-color: var(--app-text-muted);
+  --ion-tab-bar-color-selected: var(--app-accent);
+
+  --ion-item-background: transparent;
+  --ion-card-background: var(--app-bg-card);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--app-bg-dark);
+  font-family: 'DM Sans', sans-serif;
+}
+
+h1, h2, h3, h4, .brand-font {
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+
+.page-gradient {
+  background: linear-gradient(160deg, #1a3a5c 0%, #0d1b2a 40%, #0a1520 100%);
+  min-height: 100%;
+}
+
+
+.app-card {
+  background: var(--app-bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--app-border);
+  padding: 16px;
+}
+
+
+.app-input {
+  background: var(--app-bg-input) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  padding: 14px 16px !important;
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+}
+
+.app-input::placeholder {
+  color: var(--app-text-muted);
+}
+
+
+.btn-primary {
+  background: linear-gradient(135deg, #2d5986 0%, #1a3a5c 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-dark {
+  background: #1a2d42;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-outline {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+
+.stars {
+  color: var(--app-star);
+  font-size: 14px;
+}
+
+
+.logo-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 42px;
+  color: white;
+  letter-spacing: 0.05em;
+}
+
+.logo-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: var(--app-text-secondary);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+ion-tab-bar {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: 70px;
+}
+
+ion-tab-button {
+  --color: var(--app-text-muted);
+  --color-selected: var(--app-accent);
+}
+
+ion-toolbar {
+  --background: transparent;
+  --border-color: transparent;
+}
+
+ion-content {
+  --background: transparent;
+}
