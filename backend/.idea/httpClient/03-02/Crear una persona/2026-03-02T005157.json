@@ -1,0 +1,8 @@
+{
+  "id": 1,
+  "nombre": "Ivan",
+  "email": "ivan@gmail.com",
+  "contraseña": "1234",
+  "rol": "CLIENTE",
+  "fechaRegistro": "2026-03-02T00:51:56.765614"
+}

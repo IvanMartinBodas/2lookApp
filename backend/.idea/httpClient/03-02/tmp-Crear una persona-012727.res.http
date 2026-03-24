@@ -1,0 +1,21 @@
+// Status: 500, time: 392ms, size: 108 B
+### Crear una persona
+POST http://localhost:8080/api/personas HTTP/1.1
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+connection: close
+content-type: application/json
+date: Mon, 02 Mar 2026 00:27:27 GMT
+expires: 0
+pragma: no-cache
+transfer-encoding: chunked
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 0
+
+{
+  "timestamp": "2026-03-02T00:27:27.148Z",
+  "status": 500,
+  "error": "Internal Server Error",
+  "path": "/api/personas"
+}
+>> C:\Users\ivano\Downloads\2look-master\.idea\httpClient\03-02\Crear una persona\2026-03-02T012727.json

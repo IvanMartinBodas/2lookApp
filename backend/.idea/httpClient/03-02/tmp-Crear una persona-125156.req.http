@@ -1,0 +1,12 @@
+// Size: 96 B
+### Crear una persona
+POST http://localhost:8080/api/personas HTTP/1.1
+Content-Type: application/json
+Content-Length: 96
+
+{
+  "nombre": "Ivan",
+  "email": "ivan@gmail.com",
+  "contraseña": "1234",
+  "rol": "CLIENTE"
+}

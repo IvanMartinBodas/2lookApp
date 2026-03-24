@@ -1,0 +1,61 @@
+// Status: 200, time: 272ms, size: 873 B
+### Obtener todos los barberos
+GET http://localhost:8080/api/barberos HTTP/1.1
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+content-type: application/json
+date: Mon, 02 Mar 2026 00:28:30 GMT
+expires: 0
+pragma: no-cache
+transfer-encoding: chunked
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 0
+
+[
+  {
+    "id": 1,
+    "persona": {
+      "id": 1,
+      "nombre": "Charles Smith",
+      "email": "charles@2look.com",
+      "password": "1234",
+      "rol": "BARBERO",
+      "fechaRegistro": "2026-03-02T01:22:13.661335"
+    },
+    "especialidad": "Fade y degradados",
+    "fotoUrl": null,
+    "valoracion": 4.0,
+    "biografia": "Especialista en cortes modernos con más de 5 años de experiencia"
+  },
+  {
+    "id": 2,
+    "persona": {
+      "id": 2,
+      "nombre": "Richard Jones",
+      "email": "richard@2look.com",
+      "password": "1234",
+      "rol": "BARBERO",
+      "fechaRegistro": "2026-03-02T01:22:13.708332"
+    },
+    "especialidad": "Cortes con tijera",
+    "fotoUrl": null,
+    "valoracion": 5.0,
+    "biografia": "Maestro en cortes precisos con tijera"
+  },
+  {
+    "id": 3,
+    "persona": {
+      "id": 3,
+      "nombre": "Marc Andrew",
+      "email": "marc@2look.com",
+      "password": "1234",
+      "rol": "BARBERO",
+      "fechaRegistro": "2026-03-02T01:22:13.754325"
+    },
+    "especialidad": "Cortes clásicos",
+    "fotoUrl": null,
+    "valoracion": 3.0,
+    "biografia": "Experto en estilos vintage y cortes tradicionales"
+  }
+]
+>> C:\Users\ivano\Downloads\2look-master\.idea\httpClient\03-02\Obtener todos los barberos\2026-03-02T012830.json

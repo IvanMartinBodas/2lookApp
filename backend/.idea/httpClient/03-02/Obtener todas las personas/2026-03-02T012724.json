@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "nombre": "Charles Smith",
+    "email": "charles@2look.com",
+    "password": "1234",
+    "rol": "BARBERO",
+    "fechaRegistro": "2026-03-02T01:22:13.661335"
+  },
+  {
+    "id": 2,
+    "nombre": "Richard Jones",
+    "email": "richard@2look.com",
+    "password": "1234",
+    "rol": "BARBERO",
+    "fechaRegistro": "2026-03-02T01:22:13.708332"
+  },
+  {
+    "id": 3,
+    "nombre": "Marc Andrew",
+    "email": "marc@2look.com",
+    "password": "1234",
+    "rol": "BARBERO",
+    "fechaRegistro": "2026-03-02T01:22:13.754325"
+  },
+  {
+    "id": 4,
+    "nombre": "Carlos García",
+    "email": "carlos@gmail.com",
+    "password": "1234",
+    "rol": "CLIENTE",
+    "fechaRegistro": "2026-03-02T01:22:13.799916"
+  },
+  {
+    "id": 5,
+    "nombre": "Miguel Torres",
+    "email": "miguel@gmail.com",
+    "password": "1234",
+    "rol": "CLIENTE",
+    "fechaRegistro": "2026-03-02T01:22:13.845398"
+  },
+  {
+    "id": 6,
+    "nombre": "Alejandro Ruiz",
+    "email": "alejandro@gmail.com",
+    "password": "1234",
+    "rol": "CLIENTE",
+    "fechaRegistro": "2026-03-02T01:22:13.891183"
+  },
+  {
+    "id": 7,
+    "nombre": "David Martínez",
+    "email": "david@gmail.com",
+    "password": "1234",
+    "rol": "CLIENTE",
+    "fechaRegistro": "2026-03-02T01:22:13.937372"
+  },
+  {
+    "id": 8,
+    "nombre": "Pablo Sánchez",
+    "email": "pablo@gmail.com",
+    "password": "1234",
+    "rol": "CLIENTE",
+    "fechaRegistro": "2026-03-02T01:22:13.98325"
+  }
+]

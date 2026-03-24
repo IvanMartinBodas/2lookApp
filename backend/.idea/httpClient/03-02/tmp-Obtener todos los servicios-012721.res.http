@@ -1,0 +1,65 @@
+// Status: 200, time: 137ms, size: 841 B
+### Obtener todos los servicios
+GET http://localhost:8080/api/servicios HTTP/1.1
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+content-type: application/json
+date: Mon, 02 Mar 2026 00:27:21 GMT
+expires: 0
+pragma: no-cache
+transfer-encoding: chunked
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 0
+
+[
+  {
+    "id": 1,
+    "nombre": "Taper Fade",
+    "descripcion": "Degradado suave desde la nuca hacia arriba",
+    "precio": 10.00,
+    "duracionMin": 30
+  },
+  {
+    "id": 2,
+    "nombre": "Burst Fade",
+    "descripcion": "Degradado en forma de arco alrededor de la oreja",
+    "precio": 10.00,
+    "duracionMin": 30
+  },
+  {
+    "id": 3,
+    "nombre": "Drop Fade",
+    "descripcion": "Degradado que cae detrás de la oreja",
+    "precio": 10.00,
+    "duracionMin": 30
+  },
+  {
+    "id": 4,
+    "nombre": "Corte Clásico",
+    "descripcion": "Corte tradicional con tijera y máquina",
+    "precio": 10.00,
+    "duracionMin": 30
+  },
+  {
+    "id": 5,
+    "nombre": "Corte Texturizado",
+    "descripcion": "Corte moderno con textura y volumen",
+    "precio": 10.00,
+    "duracionMin": 30
+  },
+  {
+    "id": 6,
+    "nombre": "Corte Francés",
+    "descripcion": "Corte elegante estilo europeo",
+    "precio": 10.00,
+    "duracionMin": 30
+  },
+  {
+    "id": 7,
+    "nombre": "Corte Infantil",
+    "descripcion": "Corte para niños hasta 12 años",
+    "precio": 10.00,
+    "duracionMin": 25
+  }
+]
+>> C:\Users\ivano\Downloads\2look-master\.idea\httpClient\03-02\Obtener todos los servicios\2026-03-02T012721.json

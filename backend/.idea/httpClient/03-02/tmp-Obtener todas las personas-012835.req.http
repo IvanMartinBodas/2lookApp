@@ -1,0 +1,5 @@
+// Size: 0 B
+### Obtener todas las personas
+GET http://localhost:8080/api/personas HTTP/1.1
+Content-Length: 0
+

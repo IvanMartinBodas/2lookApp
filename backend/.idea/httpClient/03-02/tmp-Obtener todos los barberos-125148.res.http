@@ -1,0 +1,15 @@
+// Status: 200, time: 404ms, size: 2 B
+### Obtener todos los barberos
+GET http://localhost:8080/api/barberos HTTP/1.1
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+content-type: application/json
+date: Sun, 01 Mar 2026 23:51:48 GMT
+expires: 0
+pragma: no-cache
+transfer-encoding: chunked
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 0
+
+[]
+>> C:\Users\ivano\Downloads\2look-master\.idea\httpClient\03-02\Obtener todos los barberos\2026-03-02T005148.json

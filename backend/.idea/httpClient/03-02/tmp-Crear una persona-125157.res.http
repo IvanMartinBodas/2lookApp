@@ -1,0 +1,22 @@
+// Status: 200, time: 493ms, size: 131 B
+### Crear una persona
+POST http://localhost:8080/api/personas HTTP/1.1
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+content-type: application/json
+date: Sun, 01 Mar 2026 23:51:56 GMT
+expires: 0
+pragma: no-cache
+transfer-encoding: chunked
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 0
+
+{
+  "id": 1,
+  "nombre": "Ivan",
+  "email": "ivan@gmail.com",
+  "contraseña": "1234",
+  "rol": "CLIENTE",
+  "fechaRegistro": "2026-03-02T00:51:56.765614"
+}
+>> C:\Users\ivano\Downloads\2look-master\.idea\httpClient\03-02\Crear una persona\2026-03-02T005157.json
