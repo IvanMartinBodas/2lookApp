@@ -1,0 +1,19 @@
+### Obtener todos los barberos
+GET http://localhost:8080/api/barberos
+
+### Obtener todos los servicios
+GET http://localhost:8080/api/servicios
+
+### Obtener todas las personas
+GET http://localhost:8080/api/personas
+
+### Crear una persona
+POST http://localhost:8080/api/personas
+Content-Type: application/json
+
+{
+  "nombre": "Ivan",
+  "email": "ivan@gmail.com",
+  "password": "1234",
+  "rol": "CLIENTE"
+}
