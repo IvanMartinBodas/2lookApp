@@ -4,6 +4,7 @@ import com.example.demo.model.Reserva;
 import com.example.demo.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -42,6 +43,13 @@ public class ReservaService {
         Reserva existing = getById(id);
         existing.setEstado(estado);
         return reservaRepository.save(existing);
+    }
+
+    public Reserva marcarPagada(Integer id, String pagoStripeId) {
+        Reserva reserva = getById(id);
+        reserva.setEstado("PAGADA");
+        reserva.setPagoStripeId(pagoStripeId);
+        return reservaRepository.save(reserva);
     }
 
     public void delete(Integer id) {

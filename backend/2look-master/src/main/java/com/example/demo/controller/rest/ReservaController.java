@@ -40,8 +40,9 @@ public class ReservaController {
     }
 
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<Reserva> updateEstado(@PathVariable Integer id, @RequestParam String estado) {
-        return ResponseEntity.ok(reservaService.updateEstado(id, estado));
+    public ResponseEntity<java.util.Map<String, Object>> updateEstado(@PathVariable Integer id, @RequestParam String estado) {
+        Reserva updated = reservaService.updateEstado(id, estado);
+        return ResponseEntity.ok(java.util.Map.of("id", updated.getId(), "estado", updated.getEstado()));
     }
 
     @DeleteMapping("/{id}")
