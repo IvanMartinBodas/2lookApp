@@ -30,8 +30,14 @@ public class PersonaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Persona> update(@PathVariable Integer id, @RequestBody Persona persona) {
-        return ResponseEntity.ok(personaService.update(id, persona));
+    public ResponseEntity<java.util.Map<String, Object>> update(@PathVariable Integer id, @RequestBody Persona persona) {
+        Persona updated = personaService.update(id, persona);
+        return ResponseEntity.ok(java.util.Map.of(
+            "id", updated.getId(),
+            "nombre", updated.getNombre(),
+            "email", updated.getEmail(),
+            "rol", updated.getRol()
+        ));
     }
 
     @DeleteMapping("/{id}")

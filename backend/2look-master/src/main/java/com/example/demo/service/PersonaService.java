@@ -35,9 +35,12 @@ public class PersonaService {
 
     public Persona update(Integer id, Persona persona) {
         Persona existing = getById(id);
-        existing.setNombre(persona.getNombre());
-        existing.setEmail(persona.getEmail());
-        existing.setRol(persona.getRol());
+        if (persona.getNombre() != null && !persona.getNombre().isBlank())
+            existing.setNombre(persona.getNombre());
+        if (persona.getEmail() != null && !persona.getEmail().isBlank())
+            existing.setEmail(persona.getEmail());
+        if (persona.getPassword() != null && !persona.getPassword().isBlank())
+            existing.setPassword(persona.getPassword());
         return personaRepository.save(existing);
     }
 
