@@ -11,6 +11,16 @@ INSERT INTO persona (nombre, email, password, rol, fecha_registro)
 SELECT 'Marc Andrew', 'marc@2look.com', '1234', 'BARBERO', NOW()
 WHERE NOT EXISTS (SELECT 1 FROM persona WHERE email = 'marc@2look.com');
 
+-- ===== ADMIN =====
+INSERT INTO persona (nombre, email, password, rol, fecha_registro)
+SELECT 'Admin 2LOOK', 'admin@2look.com', 'admin123', 'ADMIN', NOW()
+WHERE NOT EXISTS (SELECT 1 FROM persona WHERE email = 'admin@2look.com');
+
+-- ===== DEMO =====
+INSERT INTO persona (nombre, email, password, rol, fecha_registro)
+SELECT 'Demo User', 'demo@2look.com', 'demo1234', 'CLIENTE', NOW()
+WHERE NOT EXISTS (SELECT 1 FROM persona WHERE email = 'demo@2look.com');
+
 -- ===== CLIENTES =====
 INSERT INTO persona (nombre, email, password, rol, fecha_registro)
 SELECT 'Carlos García', 'carlos@gmail.com', '1234', 'CLIENTE', NOW()
@@ -34,16 +44,19 @@ WHERE NOT EXISTS (SELECT 1 FROM persona WHERE email = 'pablo@gmail.com');
 
 -- ===== BARBEROS =====
 INSERT INTO barbero (persona_id, especialidad, valoracion, biografia)
-SELECT 1, 'Fade y degradados', 4.0, 'Especialista en cortes modernos con más de 5 años de experiencia'
-WHERE NOT EXISTS (SELECT 1 FROM barbero WHERE persona_id = 1);
+SELECT p.id, 'Fade y degradados', 4.0, 'Especialista en cortes modernos con más de 5 años de experiencia'
+FROM persona p WHERE p.email = 'charles@2look.com'
+AND NOT EXISTS (SELECT 1 FROM barbero b WHERE b.persona_id = p.id);
 
 INSERT INTO barbero (persona_id, especialidad, valoracion, biografia)
-SELECT 2, 'Cortes con tijera', 5.0, 'Maestro en cortes precisos con tijera'
-WHERE NOT EXISTS (SELECT 1 FROM barbero WHERE persona_id = 2);
+SELECT p.id, 'Cortes con tijera', 5.0, 'Maestro en cortes precisos con tijera'
+FROM persona p WHERE p.email = 'richard@2look.com'
+AND NOT EXISTS (SELECT 1 FROM barbero b WHERE b.persona_id = p.id);
 
 INSERT INTO barbero (persona_id, especialidad, valoracion, biografia)
-SELECT 3, 'Cortes clásicos', 3.0, 'Experto en estilos vintage y cortes tradicionales'
-WHERE NOT EXISTS (SELECT 1 FROM barbero WHERE persona_id = 3);
+SELECT p.id, 'Cortes clásicos', 3.0, 'Experto en estilos vintage y cortes tradicionales'
+FROM persona p WHERE p.email = 'marc@2look.com'
+AND NOT EXISTS (SELECT 1 FROM barbero b WHERE b.persona_id = p.id);
 
 -- ===== SERVICIOS =====
 INSERT INTO servicio (nombre, descripcion, precio, duracion_min)
