@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://pg-5be4b5d-lookdatabase.i.aivencloud.com:17090/defaultdb?sslmode=require
     username: avnadmin
-    password: AVNS_OBQGi3vOenB9JPZdFx4
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,4 +20,4 @@ spring:
       mode: always
 
 stripe:
-  secret-key: sk_test_51TU5LOCNnWykq7dSzJ35QlVT9VVwN9C7YscgIRODn9OiPB0uozqG9KVqu7wqS23iQqUPtzYXuHkMjQo1goeqeL7y00VnCKIUKY
+  secret-key: ${STRIPE_SECRET_KEY}
