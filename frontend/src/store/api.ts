@@ -1,5 +1,5 @@
 
-export const BASE_URL = 'http://localhost:8080'
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://192.168.1.132:8080'
 
 async function request<T>(method: string, path: string, body?: any): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -60,6 +60,15 @@ export const opinionApi = {
 
 export const historialApi = {
   getAll: () => request<any[]>('GET', '/api/historial'),
-  getByPersona: (personaId: number) => request<any[]>('GET', `/api/historial/persona/${personaId}`),
+  getByCliente: (clienteId: number) => request<any[]>('GET', `/api/historial/cliente/${clienteId}`),
   create: (data: any) => request<any>('POST', '/api/historial', data)
+}
+
+export const pagoApi = {
+  createPaymentIntent: (data: { reservaId?: number | null; amount?: number }) =>
+    request<{ clientSecret: string; paymentIntentId: string; amount: number }>(
+      'POST', '/api/pagos/create-payment-intent', data
+    ),
+  confirmar: (data: { reservaId: number; paymentIntentId: string }) =>
+    request<{ ok: boolean; reservaId: number }>('POST', '/api/pagos/confirmar', data)
 }
