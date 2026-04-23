@@ -16,18 +16,23 @@
                 v-for="time in period.times"
                 :key="time"
                 :class="['time-slot', selectedTime === time ? 'selected' : '']"
-                @click="selectedTime = time" >
+                @click="selectedTime = time"
+              >
                 {{ time }}
               </div>
             </div>
           </div>
         </div>
+
         <div class="bottom-bar">
           <div class="bottom-info">
-            <div class="bottom-time">{{ selectedTime || '18:30 - 19:00' }}</div>
-            <div class="bottom-price">10,00 €</div>
+            <div class="bottom-time">{{ selectedTime || 'Elige hora' }}</div>
+            <div class="bottom-price">{{ bookingStore.servicioPrecio || 10 }}€</div>
           </div>
-          <button class="reserve-btn" @click="goToCitas">Reservar →</button>
+          <button class="reserve-btn" :disabled="!selectedTime || guardando" @click="confirmarReserva">
+            <ion-spinner v-if="guardando" name="crescent" style="width:16px;height:16px;margin-right:6px"></ion-spinner>
+            {{ guardando ? 'Guardando...' : 'Reservar →' }}
+          </button>
         </div>
       </div>
     </ion-content>
@@ -36,29 +41,69 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IonPage, IonContent, IonIcon } from '@ionic/vue'
+import { IonPage, IonContent, IonIcon, IonSpinner } from '@ionic/vue'
 import { arrowBackOutline } from 'ionicons/icons'
 import { addIcons } from 'ionicons'
 import { useRouter } from 'vue-router'
-import { bookingStore } from '@/store/user'
+import { bookingStore, userStore } from '@/store/user'
+import { reservaApi } from '@/store/api'
 
 addIcons({ 'arrow-back-outline': arrowBackOutline })
 
 const router = useRouter()
 const selectedTime = ref('')
-
-const goToCitas = () => {
-  bookingStore.hora = selectedTime.value || '18:30'
-  bookingStore.tieneCita = true
-  router.replace('/tabs').then(() => {
-    router.replace('/tabs/citas')
-  })
-}
+const guardando = ref(false)
 
 const periods = ref([
   { name: 'Mañana', times: ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30'] },
-  { name: 'Tarde', times: ['15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'] },
+  { name: 'Tarde',  times: ['15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'] },
 ])
+
+const confirmarReserva = async () => {
+  if (!selectedTime.value) return
+  guardando.value = true
+
+  bookingStore.hora = selectedTime.value
+  bookingStore.tieneCita = true
+
+
+  const fechaISO = buildFechaISO(bookingStore.fecha, selectedTime.value)
+
+  try {
+    if (userStore.logueado && userStore.id) {
+      await reservaApi.create({
+        cliente: { id: userStore.id },
+        barbero: { id: bookingStore.barberoId },
+        servicio: { id: bookingStore.servicioId || 1 },
+        fechaCita: fechaISO,
+        estado: 'PENDIENTE',
+        cantidadPagada: bookingStore.servicioPrecio || 10
+      })
+    }
+  } catch (e) {
+    console.warn('No se pudo guardar la reserva en el servidor:', e)
+  } finally {
+    guardando.value = false
+  }
+
+  router.replace('/tabs').then(() => router.replace('/tabs/citas'))
+}
+
+function buildFechaISO(fechaStr: string, hora: string): string {
+  try {
+    const meses: Record<string, number> = {
+      'Ene':0,'Feb':1,'Mar':2,'Abr':3,'May':4,'Jun':5,
+      'Jul':6,'Ago':7,'Sep':8,'Oct':9,'Nov':10,'Dic':11
+    }
+    const [dia, mes] = fechaStr.split(' ')
+    const month = meses[mes] ?? new Date().getMonth()
+    const [h, m] = hora.split(':')
+    const date = new Date(new Date().getFullYear(), month, parseInt(dia), parseInt(h), parseInt(m))
+    return date.toISOString()
+  } catch {
+    return new Date().toISOString()
+  }
+}
 </script>
 
 <style scoped>
@@ -77,5 +122,6 @@ h4 { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; margin: 0 
 .bottom-info { display: flex; flex-direction: column; gap: 2px; }
 .bottom-time { color: rgba(255,255,255,0.6); font-size: 13px; }
 .bottom-price { color: white; font-size: 20px; font-weight: 700; }
-.reserve-btn { background: #1a3a5c; border: none; border-radius: 12px; color: white; padding: 14px 24px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; }
+.reserve-btn { background: #1a3a5c; border: none; border-radius: 12px; color: white; padding: 14px 24px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; }
+.reserve-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>

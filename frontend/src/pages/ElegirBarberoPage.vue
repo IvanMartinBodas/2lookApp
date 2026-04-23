@@ -73,7 +73,13 @@ const continuar = () => {
     bookingStore.barberoInitials = barber.initials
     bookingStore.barberoColor = barber.color
   }
-  router.push('/reservar')
+  // Si viene desde la IA, el corte ya está elegido — saltar ElegirCorte
+  if (bookingStore.desdeIA) {
+    bookingStore.desdeIA = false
+    router.push('/reservar')
+  } else {
+    router.push('/elegir-corte?desde=home')
+  }
 }
 </script>
 
