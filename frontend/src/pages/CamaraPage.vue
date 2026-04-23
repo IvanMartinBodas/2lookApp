@@ -1,7 +1,6 @@
 <template>
   <ion-page>
 
-    <!-- ───── FASE: CÁMARA ───── -->
     <div v-if="fase === 'camara'" class="camara-container">
       <div class="camara-preview">
         <video ref="videoEl" class="video-stream" autoplay playsinline muted></video>
@@ -18,6 +17,11 @@
           <p class="guia-texto">Centra tu cara aquí</p>
         </div>
 
+        <div v-if="!esAdmin()" class="intentos-badge" :class="intentosRestantes === 0 ? 'agotado' : intentosRestantes === 1 ? 'warning' : ''">
+          <span v-if="intentosRestantes > 0">{{ intentosRestantes }} análisis {{ intentosRestantes === 1 ? 'restante' : 'restantes' }} hoy</span>
+          <span v-else>Has agotado el +IA de hoy · Vuelve mañana</span>
+        </div>
+
         <div class="controles">
           <input
             ref="inputFile"
@@ -26,8 +30,8 @@
             style="display:none"
             @change="onFileSelected"
           />
-          <button class="shutter" @click="hacerFoto">
-            <div class="shutter-inner"></div>
+          <button class="shutter" @click="hacerFoto" :disabled="intentosRestantes <= 0">
+            <div class="shutter-inner" :style="intentosRestantes <= 0 ? 'background:#444' : ''"></div>
           </button>
         </div>
 
@@ -35,7 +39,6 @@
       </div>
     </div>
 
-    <!-- ───── FASE: CARGANDO ───── -->
     <div v-else-if="fase === 'cargando'" class="cargando-container">
       <div class="foto-fondo" :style="fotoCapturada ? 'background-image:url(' + fotoCapturada + ');background-size:cover;background-position:center' : ''"></div>
       <div class="overlay-oscuro"></div>
@@ -48,7 +51,6 @@
       </div>
     </div>
 
-    <!-- ───── FASE: RESULTADO ───── -->
     <div v-else-if="fase === 'resultado'" class="resultado-container">
       <ion-content :fullscreen="true">
 
@@ -105,7 +107,6 @@
       </ion-content>
     </div>
 
-    <!-- ───── FASE: ERROR ───── -->
     <div v-else-if="fase === 'error'" class="error-container">
       <div class="error-contenido">
         <div class="error-icon">⚠️</div>
@@ -115,6 +116,7 @@
       </div>
     </div>
 
+
   </ion-page>
 </template>
 
@@ -123,13 +125,40 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { IonPage, IonContent, IonButton, IonIcon, IonSpinner } from '@ionic/vue'
 import { sparklesOutline, cutOutline } from 'ionicons/icons'
+import { bookingStore, userStore } from '@/store/user'
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEYconst FAL_API_KEY = 'TU_FAL_API_KEY_AQUI'
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
+const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY
 
 type Fase = 'camara' | 'cargando' | 'resultado' | 'error'
 
+const MAX_INTENTOS = 3
+const ADMIN_EMAILS = ['admin@2look.com', 'ivanovich260105@gmail.com']
+
+function esAdmin(): boolean {
+  return ADMIN_EMAILS.includes(userStore.email)
+}
+
+function getIntentosHoy(): number {
+  if (esAdmin()) return 0
+  const hoy = new Date().toISOString().slice(0, 10)
+  const raw = localStorage.getItem('ia_intentos')
+  if (!raw) return 0
+  const { fecha, count } = JSON.parse(raw)
+  return fecha === hoy ? count : 0
+}
+
+function registrarIntento() {
+  if (esAdmin()) return
+  const hoy = new Date().toISOString().slice(0, 10)
+  const count = getIntentosHoy() + 1
+  localStorage.setItem('ia_intentos', JSON.stringify({ fecha: hoy, count }))
+  intentosRestantes.value = MAX_INTENTOS - count
+}
+
 const router = useRouter()
 const fase = ref<Fase>('camara')
+const intentosRestantes = ref(esAdmin() ? 99 : MAX_INTENTOS - getIntentosHoy())
 const fotoCapturada = ref('')
 const mensajeCarga = ref('Analizando tu cara...')
 const submensajeCarga = ref('La IA está detectando la forma de tu rostro')
@@ -177,7 +206,6 @@ async function iniciarCamara() {
     })
     if (videoEl.value) videoEl.value.srcObject = stream
   } catch {
-    console.log('Sin acceso a cámara directa, se usará input file')
   }
 }
 
@@ -187,6 +215,7 @@ function pararCamara() {
 }
 
 function hacerFoto() {
+  if (intentosRestantes.value <= 0) return
   if (stream && videoEl.value && canvasEl.value) {
     const video = videoEl.value
     const canvas = canvasEl.value
@@ -213,6 +242,8 @@ function onFileSelected(e: Event) {
 }
 
 async function procesarFoto() {
+  if (intentosRestantes.value <= 0) return
+  registrarIntento()
   fase.value = 'cargando'
   mensajeCarga.value = 'Analizando tu rostro...'
   submensajeCarga.value = 'Gemini está detectando la forma de tu cara'
@@ -242,22 +273,27 @@ async function procesarFoto() {
   }
 }
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']
+const GEMINI_MODELS = [
+  { model: 'gemini-2.0-flash', api: 'v1beta' },
+  { model: 'gemini-2.0-flash-exp', api: 'v1beta' },
+  { model: 'gemini-1.5-flash', api: 'v1' },
+  { model: 'gemini-1.5-flash-latest', api: 'v1' },
+  { model: 'gemini-1.5-pro', api: 'v1' },
+]
 
 async function analizarConGemini(dataUrl: string) {
   const base64 = dataUrl.split(',')[1]
   const mimeType = dataUrl.split(';')[0].split(':')[1]
 
   const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra:
-{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre corte 1","descripcion":"1-2 frases por qué le favorece","promptImagen":"men haircut [nombre] style, barbershop reference photo, clean professional, white background, no face"},{"nombre":"nombre corte 2","descripcion":"descripción","promptImagen":"prompt en inglés"},{"nombre":"nombre corte 3","descripcion":"descripción","promptImagen":"prompt en inglés"}]}`
+{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre corte 1","descripcion":"1-2 frases por qué le favorece","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 2","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 3","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"}]}`
 
   let lastError = ''
 
-  for (const model of GEMINI_MODELS) {
+  for (const { model, api } of GEMINI_MODELS) {
     try {
-      console.log(`Intentando con modelo: ${model}`)
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -274,10 +310,13 @@ async function analizarConGemini(dataUrl: string) {
       if (!res.ok) {
         const err = await res.json()
         const msg = err?.error?.message || ''
-        // Error de quota, probar siguiente modelo
-        if (msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
-          console.warn(`Quota agotada en ${model}, probando siguiente...`)
+        const reintentable = msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED') ||
+          msg.includes('high demand') || msg.includes('UNAVAILABLE') || msg.includes('overloaded') ||
+          msg.includes('not found') || msg.includes('NOT_FOUND') ||
+          res.status === 429 || res.status === 503 || res.status === 404
+        if (reintentable) {
           lastError = msg
+          await new Promise(r => setTimeout(r, 1000))
           continue
         }
         throw new Error(`Gemini: ${msg || res.status}`)
@@ -295,8 +334,7 @@ async function analizarConGemini(dataUrl: string) {
 
       try {
         return JSON.parse(jsonStr)
-      } catch (parseErr) {
-        console.error('JSON raw de Gemini:', JSON.stringify(jsonStr))
+      } catch {
         try {
           const repaired = jsonStr + '"}]}'
           return JSON.parse(repaired)
@@ -306,8 +344,11 @@ async function analizarConGemini(dataUrl: string) {
       }
 
     } catch (err: any) {
-      if (err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED')) {
+      const reintentable = err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED') ||
+        err.message?.includes('high demand') || err.message?.includes('UNAVAILABLE') || err.message?.includes('overloaded')
+      if (reintentable) {
         lastError = err.message
+        await new Promise(r => setTimeout(r, 1000))
         continue
       }
       throw err
@@ -318,30 +359,55 @@ async function analizarConGemini(dataUrl: string) {
 }
 
 async function generarImagenesCortes(cortes: any[]) {
+  let fotoUrl = fotoCapturada.value
+  if (FAL_API_KEY && FAL_API_KEY !== 'TU_FAL_API_KEY_AQUI') {
+    try {
+      fotoUrl = await subirFotoAFal(fotoCapturada.value)
+    } catch {
+      fotoUrl = fotoCapturada.value
+    }
+  }
   await Promise.allSettled(
-    cortes.map((corte: any, i: number) => generarImagenCorte(corte.promptImagen, i))
+    cortes.map((corte: any, i: number) => generarImagenCorte(corte.promptImagen, i, fotoUrl))
   )
 }
 
-async function generarImagenCorte(prompt: string, index: number) {
-  if (FAL_API_KEY === 'TU_FAL_API_KEY_AQUI') {
+async function subirFotoAFal(dataUrl: string): Promise<string> {
+  const blob = await fetch(dataUrl).then(r => r.blob())
+  const formData = new FormData()
+  formData.append('file', new File([blob], 'face.jpg', { type: 'image/jpeg' }))
+  const res = await fetch('https://fal.run/storage/upload', {
+    method: 'POST',
+    headers: { 'Authorization': `Key ${FAL_API_KEY}` },
+    body: formData
+  })
+  if (!res.ok) throw new Error('upload failed')
+  const data = await res.json()
+  return data.url
+}
+
+async function generarImagenCorte(prompt: string, index: number, fotoUrl: string) {
+  if (!FAL_API_KEY || FAL_API_KEY === 'TU_FAL_API_KEY_AQUI') {
     await new Promise(r => setTimeout(r, 800))
     resultado.value.cortes[index].cargandoImagen = false
     return
   }
 
   try {
-    const res = await fetch('https://fal.run/fal-ai/fast-sdxl', {
+    const res = await fetch('https://fal.run/fal-ai/flux/schnell/image-to-image', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${FAL_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        prompt: prompt + ', barbershop haircut reference, professional photo, clean look',
-        image_size: 'square_hd',
-        num_inference_steps: 25,
-        num_images: 1
+        image_url: fotoUrl,
+        prompt: prompt,
+        negative_prompt: 'deformed, blurry, bad anatomy, disfigured, cropped head, missing hair, ugly, low quality',
+        strength: 0.45,
+        num_inference_steps: 8,
+        num_images: 1,
+        image_size: 'square_hd'
       })
     })
 
@@ -351,7 +417,6 @@ async function generarImagenCorte(prompt: string, index: number) {
     if (url) resultado.value.cortes[index].imagenUrl = url
 
   } catch (err) {
-    console.warn(`Imagen corte ${index} no generada:`, err)
   } finally {
     resultado.value.cortes[index].cargandoImagen = false
   }
@@ -387,6 +452,9 @@ ion-page { --background: #000; }
 .guia-encuadre { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
 .guia-oval { width: 200px; height: 260px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.6); }
 .guia-texto { color: rgba(255,255,255,0.7); font-size: 14px; margin: 0; font-family: 'DM Sans', sans-serif; }
+.intentos-badge { position: relative; z-index: 10; text-align: center; color: rgba(255,255,255,0.5); font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 0 0 12px; }
+.intentos-badge.warning { color: #f5c518; font-weight: 600; }
+.intentos-badge.agotado { color: rgba(255,100,100,0.85); font-weight: 600; }
 .controles { position: relative; z-index: 10; display: flex; justify-content: center; padding: 0 40px 60px; }
 .shutter { width: 78px; height: 78px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 3px solid #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .shutter:active .shutter-inner { transform: scale(0.9); }
@@ -402,23 +470,23 @@ ion-page { --background: #000; }
 .cargando-subtexto { color: rgba(255,255,255,0.6); font-size: 14px; text-align: center; padding: 0 40px; margin: 0; }
 
 .resultado-container { height: 100vh; background: #f5f5f5; }
-.foto-visor { position: relative; height: 46vh; background: #1a1a2e; overflow: hidden; }
-.foto-real { width: 100%; height: 100%; object-fit: cover; display: block; }
-.foto-badge { position: absolute; bottom: 14px; left: 14px; background: rgba(0,0,0,0.65); border-radius: 20px; padding: 6px 14px; color: #fff; font-size: 13px; font-weight: 700; backdrop-filter: blur(6px); display: flex; align-items: center; gap: 6px; }
-.resultado-contenido { padding: 20px 16px 100px; display: flex; flex-direction: column; gap: 14px; }
-.forma-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 16px; padding: 14px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
-.forma-emoji { font-size: 32px; }
+.foto-visor { position: relative; height: 28vh; background: #1a1a2e; overflow: hidden; }
+.foto-real { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.foto-badge { position: absolute; bottom: 10px; left: 14px; background: rgba(0,0,0,0.65); border-radius: 20px; padding: 5px 12px; color: #fff; font-size: 12px; font-weight: 700; backdrop-filter: blur(6px); display: flex; align-items: center; gap: 6px; }
+.resultado-contenido { padding: 16px 16px 100px; display: flex; flex-direction: column; gap: 12px; }
+.forma-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 16px; padding: 12px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+.forma-emoji { font-size: 28px; }
 .forma-label { font-size: 11px; color: #999; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-.forma-nombre { font-size: 18px; font-weight: 800; color: #1a1a2e; margin: 2px 0 0; }
-.resultado-descripcion { font-size: 14px; color: #666; line-height: 1.6; margin: 0; background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-.seccion-titulo { font-size: 18px; font-weight: 800; color: #1a1a2e; margin: 4px 0 0; }
+.forma-nombre { font-size: 17px; font-weight: 800; color: #1a1a2e; margin: 2px 0 0; }
+.resultado-descripcion { font-size: 13px; color: #666; line-height: 1.5; margin: 0; background: #fff; border-radius: 14px; padding: 12px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.seccion-titulo { font-size: 17px; font-weight: 800; color: #1a1a2e; margin: 2px 0 0; }
 
 .corte-tarjeta { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 14px rgba(0,0,0,0.08); }
-.corte-imagen-wrap { width: 100%; height: 160px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.corte-imagen { width: 100%; height: 100%; object-fit: cover; }
+.corte-imagen-wrap { width: 100%; height: 260px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.corte-imagen { width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .corte-imagen-loading, .corte-imagen-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-.corte-body { padding: 14px 16px 16px; }
-.corte-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.corte-body { padding: 12px 16px 14px; }
+.corte-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
 .corte-numero { min-width: 28px; height: 28px; border-radius: 50%; background: #1a1a2e; color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 .corte-nombre { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0; }
 .corte-descripcion { font-size: 13px; color: #777; line-height: 1.5; margin: 0; }
