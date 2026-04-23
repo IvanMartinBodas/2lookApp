@@ -124,8 +124,7 @@ import { useRouter } from 'vue-router'
 import { IonPage, IonContent, IonButton, IonIcon, IonSpinner } from '@ionic/vue'
 import { sparklesOutline, cutOutline } from 'ionicons/icons'
 
-const GEMINI_API_KEY = 'AIzaSyBVmoW6Y-Hf2aru-NFqfwpcO_WjqkFSfFI'
-const FAL_API_KEY = 'TU_FAL_API_KEY_AQUI'
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEYconst FAL_API_KEY = 'TU_FAL_API_KEY_AQUI'
 
 type Fase = 'camara' | 'cargando' | 'resultado' | 'error'
 
