@@ -11,6 +11,10 @@
           <h2>Elige tu Barbero</h2>
           <p class="subtitle">Selecciona uno de los barberos disponibles a continuación.</p>
 
+          <div v-if="loading" style="display:flex;justify-content:center;padding:40px 0">
+            <ion-spinner name="circular" color="light"></ion-spinner>
+          </div>
+
           <div
             v-for="barber in barbers"
             :key="barber.id"
@@ -42,23 +46,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { IonPage, IonContent, IonIcon } from '@ionic/vue'
+import { ref, onMounted } from 'vue'
+import { IonPage, IonContent, IonIcon, IonSpinner } from '@ionic/vue'
 import { arrowBackOutline, checkmarkCircle, ellipseOutline } from 'ionicons/icons'
 import { addIcons } from 'ionicons'
 import { useRouter } from 'vue-router'
 import { bookingStore } from '@/store/user'
+import { barberoApi } from '@/store/api'
 
 addIcons({ 'arrow-back-outline': arrowBackOutline, 'checkmark-circle': checkmarkCircle, 'ellipse-outline': ellipseOutline })
 
 const router = useRouter()
-const selected = ref<number | null>(null)
+const selected = ref<number | null>(bookingStore.barberoId || null)
+const loading = ref(true)
 
-const barbers = ref([
-  { id: 1, name: 'Richard Jones', rating: 5, ratingText: '5.0', initials: 'RJ', color: '#2d5986', img: '/assets/Rectangle__5.png' },
-  { id: 2, name: 'Marc Andrew',   rating: 3, ratingText: '3.0', initials: 'MA', color: '#1a5c3a', img: '/assets/Rectangle__4.png' },
-  { id: 3, name: 'Charles Smith', rating: 4, ratingText: '4.0', initials: 'CS', color: '#8B4513', img: '/assets/Rectangle.png'  },
-])
+const fallbackColors = ['#2d5986', '#1a5c3a', '#8B4513', '#4a3a8c', '#1a4a3c']
+const fallbackImgs = ['/assets/Rectangle__5.png', '/assets/Rectangle__4.png', '/assets/Rectangle.png']
+
+function getFotoPorNombre(nombre: string): string {
+  const n = (nombre || '').toLowerCase()
+  if (n.includes('charles')) return '/assets/Rectangle.png'
+  if (n.includes('richard')) return '/assets/Rectangle__5.png'
+  if (n.includes('marc'))    return '/assets/Rectangle__4.png'
+  return '/assets/Rectangle.png'
+}
+
+const barbers = ref<any[]>([])
+
+onMounted(async () => {
+  try {
+    const data = await barberoApi.getAll()
+    barbers.value = data.map((b: any, i: number) => ({
+      id: b.id,
+      name: b.persona?.nombre || 'Barbero',
+      rating: Math.round(b.valoracion || 0),
+      ratingText: (b.valoracion || 0).toFixed(1),
+      initials: (b.persona?.nombre || 'B').substring(0, 2).toUpperCase(),
+      color: fallbackColors[i % fallbackColors.length],
+      img: b.fotoUrl || getFotoPorNombre(b.persona?.nombre || ''),
+    }))
+  } catch {
+    barbers.value = [
+      { id: 1, name: 'Richard Jones', rating: 5, ratingText: '5.0', initials: 'RJ', color: '#2d5986', img: '/assets/Rectangle__5.png' },
+      { id: 2, name: 'Marc Andrew',   rating: 3, ratingText: '3.0', initials: 'MA', color: '#1a5c3a', img: '/assets/Rectangle__4.png' },
+      { id: 3, name: 'Charles Smith', rating: 4, ratingText: '4.0', initials: 'CS', color: '#8B4513', img: '/assets/Rectangle.png'  },
+    ]
+  } finally {
+    loading.value = false
+  }
+})
 
 const seleccionar = (barber: any) => {
   selected.value = barber.id
@@ -73,13 +109,8 @@ const continuar = () => {
     bookingStore.barberoInitials = barber.initials
     bookingStore.barberoColor = barber.color
   }
-  // Si viene desde la IA, el corte ya está elegido — saltar ElegirCorte
-  if (bookingStore.desdeIA) {
-    bookingStore.desdeIA = false
-    router.push('/reservar')
-  } else {
-    router.push('/elegir-corte?desde=home')
-  }
+  bookingStore.desdeIA = false
+  router.push('/reservar')
 }
 </script>
 
