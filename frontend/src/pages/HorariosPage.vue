@@ -45,7 +45,7 @@ import { IonPage, IonContent, IonIcon, IonSpinner } from '@ionic/vue'
 import { arrowBackOutline } from 'ionicons/icons'
 import { addIcons } from 'ionicons'
 import { useRouter } from 'vue-router'
-import { bookingStore, userStore } from '@/store/user'
+import { bookingStore, userStore, restaurarSesion } from '@/store/user'
 import { reservaApi } from '@/store/api'
 
 addIcons({ 'arrow-back-outline': arrowBackOutline })
@@ -63,15 +63,16 @@ const confirmarReserva = async () => {
   if (!selectedTime.value) return
   guardando.value = true
 
+  if (!userStore.id) restaurarSesion()
+
   bookingStore.hora = selectedTime.value
   bookingStore.tieneCita = true
-
 
   const fechaISO = buildFechaISO(bookingStore.fecha, selectedTime.value)
 
   try {
-    if (userStore.logueado && userStore.id) {
-      await reservaApi.create({
+    if (userStore.id) {
+      const creada = await reservaApi.create({
         cliente: { id: userStore.id },
         barbero: { id: bookingStore.barberoId },
         servicio: { id: bookingStore.servicioId || 1 },
@@ -79,14 +80,14 @@ const confirmarReserva = async () => {
         estado: 'PENDIENTE',
         cantidadPagada: bookingStore.servicioPrecio || 10
       })
+      bookingStore.reservaId = creada?.id ?? null
     }
   } catch (e) {
-    console.warn('No se pudo guardar la reserva en el servidor:', e)
   } finally {
     guardando.value = false
   }
 
-  router.replace('/tabs').then(() => router.replace('/tabs/citas'))
+  window.location.replace('/tabs/citas')
 }
 
 function buildFechaISO(fechaStr: string, hora: string): string {
