@@ -8,11 +8,15 @@
           </button>
         </div>
 
-        <div v-if="!barber" class="empty-state">
+        <div v-if="loading" style="display:flex;justify-content:center;padding:60px 0">
+          <ion-spinner name="circular" color="light"></ion-spinner>
+        </div>
+
+        <div v-else-if="!barber" class="empty-state">
           <p>Barbero no encontrado</p>
         </div>
 
-        <div v-else class="page-content">
+        <div v-else-if="barber" class="page-content">
 
           
           <div class="profile-card">
@@ -46,7 +50,7 @@
           </div>
 
           
-          <button class="btn-primary" @click="router.push('/reservar')">
+          <button class="btn-primary" @click="router.push('/elegir-corte')">
             Reservar cita
           </button>
 
@@ -57,12 +61,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
-import { IonPage, IonContent, IonIcon } from '@ionic/vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { IonPage, IonContent, IonIcon, IonSpinner } from '@ionic/vue'
 import { arrowBackOutline } from 'ionicons/icons'
 import { addIcons } from 'ionicons'
 import { useRouter, useRoute } from 'vue-router'
-
+import { barberoApi } from '@/store/api'
+import { bookingStore } from '@/store/user'
 
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
@@ -85,22 +90,51 @@ const router = useRouter()
 const route = useRoute()
 const chartCanvas = ref<HTMLCanvasElement | null>(null)
 let chartInstance: Chart | null = null
-
+const loading = ref(true)
 
 const fotosCortes = ['/assets/1.jpg','/assets/2.jpg','/assets/3.jpg','/assets/4.jpg','/assets/5.jpg']
+const meses = ['Dic','Ene','Feb','Mar','Abr','May']
 
-const barberos = [
-  { id: 1, name: 'Charles Smith', age: 33, title: 'Licenciado en Ecoles de Coiffure/Barberie', rating: 4, ratingText: '4.0', img: '/assets/Rectangle.png', cortes: fotosCortes, valoraciones: [3.5,3.8,4.0,3.9,4.1,4.0] },
-  { id: 2, name: 'Richard Jones', age: 28, title: 'Licenciado en Ecoles de Coiffure/Barberie', rating: 5, ratingText: '5.0', img: '/assets/Rectangle__5.png', cortes: fotosCortes, valoraciones: [4.2,4.5,4.7,4.8,4.9,5.0] },
-  { id: 3, name: 'Marc Andrew', age: 35, title: 'Licenciado en Ecoles de Coiffure/Barberie', rating: 3, ratingText: '3.0', img: '/assets/Rectangle__4.png', cortes: fotosCortes, valoraciones: [3.0,2.8,3.1,2.9,3.0,3.0] },
-]
+function getFotoPorNombre(nombre: string): string {
+  const n = (nombre || '').toLowerCase()
+  if (n.includes('charles')) return '/assets/Rectangle.png'
+  if (n.includes('richard')) return '/assets/Rectangle__5.png'
+  if (n.includes('marc'))    return '/assets/Rectangle__4.png'
+  return '/assets/Rectangle.png'
+}
 
-const barber = computed(() => {
+const barber = ref<any>(null)
+
+onMounted(async () => {
   const id = Number(route.params.id)
-  return barberos.find(b => b.id === id) || null
+  try {
+    const b = await barberoApi.getById(id)
+    const val = b.valoracion || 3
+    barber.value = {
+      id: b.id,
+      name: b.persona?.nombre || 'Barbero',
+      age: 30,
+      title: b.especialidad || 'Barbero profesional',
+      rating: Math.round(val),
+      ratingText: val.toFixed(1),
+      img: b.fotoUrl || getFotoPorNombre(b.persona?.nombre || ''),
+      cortes: fotosCortes,
+      valoraciones: [val - 0.5, val - 0.3, val, val - 0.1, val + 0.1, val].map(v => Math.min(5, Math.max(1, v))),
+    }
+    bookingStore.barberoId = b.id
+    bookingStore.barberoNombre = b.persona?.nombre || 'Barbero'
+    bookingStore.barberoImg = b.fotoUrl || getFotoPorNombre(b.persona?.nombre || '')
+  } catch {
+    const fallback = [
+      { id: 1, name: 'Charles Smith', age: 33, title: 'Licenciado en Ecoles de Coiffure/Barberie', rating: 4, ratingText: '4.0', img: '/assets/Rectangle.png', cortes: fotosCortes, valoraciones: [3.5,3.8,4.0,3.9,4.1,4.0] },
+      { id: 2, name: 'Richard Jones', age: 28, title: 'Licenciado en Ecoles de Coiffure/Barberie', rating: 5, ratingText: '5.0', img: '/assets/Rectangle__5.png', cortes: fotosCortes, valoraciones: [4.2,4.5,4.7,4.8,4.9,5.0] },
+      { id: 3, name: 'Marc Andrew',   age: 35, title: 'Licenciado en Ecoles de Coiffure/Barberie', rating: 3, ratingText: '3.0', img: '/assets/Rectangle__4.png', cortes: fotosCortes, valoraciones: [3.0,2.8,3.1,2.9,3.0,3.0] },
+    ]
+    barber.value = fallback.find(b => b.id === id) || null
+  } finally {
+    loading.value = false
+  }
 })
-
-const meses = ['Sep','Oct','Nov','Dic','Ene','Feb']
 
 function crearGrafica() {
   if (!chartCanvas.value || !barber.value) return
@@ -142,7 +176,7 @@ function crearGrafica() {
           bodyColor: '#fff',
           borderColor: 'rgba(255,255,255,0.1)',
           borderWidth: 1,
-          callbacks: { label: (ctx) => ` ${ctx.parsed.y.toFixed(1)} ★` },
+          callbacks: { label: (ctx) => ` ${ctx.parsed.y?.toFixed(1) ?? '0.0'} ★` },
         },
       },
       scales: {
@@ -155,7 +189,7 @@ function crearGrafica() {
 
 watch(barber, async (val) => {
   if (val) { await nextTick(); crearGrafica() }
-}, { immediate: true })
+})
 
 onUnmounted(() => { chartInstance?.destroy(); chartInstance = null })
 </script>
