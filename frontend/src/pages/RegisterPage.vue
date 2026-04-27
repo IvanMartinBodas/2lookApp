@@ -21,12 +21,12 @@
 
           <div class="field-group fade-in-up" style="animation-delay: 0.2s">
             <label>Email</label>
-            <input v-model="form.email" type="email" class="app-input" placeholder="nombreusuario@gmail.com" :disabled="cargando" />
+            <input v-model="form.email" type="email" class="app-input" placeholder="ejemplo@gmail.com" :disabled="cargando" />
           </div>
 
           <div class="field-group fade-in-up" style="animation-delay: 0.25s">
             <label>Confirma tu email</label>
-            <input v-model="form.emailConfirm" type="email" class="app-input" placeholder="nombreusuario@gmail.com" :disabled="cargando" />
+            <input v-model="form.emailConfirm" type="email" class="app-input" placeholder="ejemplo@gmail.com" :disabled="cargando" />
           </div>
 
           <div class="field-group fade-in-up" style="animation-delay: 0.3s">
@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { IonPage, IonContent, IonIcon, IonSpinner } from '@ionic/vue'
+import { IonPage, IonContent, IonIcon, IonSpinner, useIonRouter } from '@ionic/vue'
 import { arrowUndoOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons'
 import { addIcons } from 'ionicons'
 import { useRouter } from 'vue-router'
@@ -76,6 +76,7 @@ import { BASE_URL } from '@/store/api'
 addIcons({ 'arrow-undo-outline': arrowUndoOutline, 'eye-outline': eyeOutline, 'eye-off-outline': eyeOffOutline })
 
 const router = useRouter()
+const ionRouter = useIonRouter()
 const showPass = ref(false)
 const showPass2 = ref(false)
 const cargando = ref(false)
@@ -100,8 +101,8 @@ const register = async () => {
     errorMsg.value = 'Las contraseñas no coinciden'
     return
   }
-  if (form.password.length < 6) {
-    errorMsg.value = 'La contraseña debe tener al menos 6 caracteres'
+  if (form.password.length < 8) {
+    errorMsg.value = 'La contraseña debe tener al menos 8 caracteres'
     return
   }
 
@@ -125,7 +126,7 @@ const register = async () => {
     }
 
     setUsuario(data)
-    router.replace('/tabs/home')
+    window.location.replace('/tabs/home')
 
   } catch (e) {
     errorMsg.value = 'Sin conexión al servidor'
