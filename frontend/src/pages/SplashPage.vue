@@ -40,7 +40,7 @@ const router = useRouter()
 onMounted(() => {
   setTimeout(() => {
     router.replace('/login')
-  }, 2800)
+  }, 2500)
 })
 </script>
 
@@ -52,7 +52,7 @@ ion-page {
 .splash-bg {
   width: 100%;
   height: 100vh;
-  background: linear-gradient(180deg, #004780 0%, #121212 100%);
+  background: linear-gradient(180deg, #003d70 0%, #0a0a0a 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
