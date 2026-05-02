@@ -8,7 +8,7 @@
           </div>
           <div class="hero-text">
             <h1>Bienvenido</h1>
-            <p>Explora estilos y encuentra tu barbero</p>
+            <p>Encuentra tu barbero y reserva en segundos</p>
           </div>
         </div>
 
@@ -79,14 +79,14 @@
         </div>
 
         <div class="section-content">
-          <button class="cta-btn" @click="router.push('/elegir-barbero')">
-            Reservar Cita →
+          <button class="cta-btn" @click="router.push('/elegir-corte')">
+            Nueva reserva →
           </button>
           <div class="map-section">
-            <h3>Donde estamos</h3>
+            <h3>Dónde estamos</h3>
             <div class="map-placeholder">
               <div id="leaflet-map" style="width:100%; height:100%;"></div>
-              <div class="map-label">Barcelona, España</div>
+              <div class="map-label">📍 The Barberist · Carrer de Verdi 74, Gràcia</div>
             </div>
           </div>
         </div>
@@ -148,15 +148,22 @@ onMounted(async () => {
 
   await nextTick()
   setTimeout(() => {
-    const lat = 41.3851
-    const lng = 2.1734
-    map = L.map('leaflet-map', { center: [lat, lng], zoom: 15, zoomControl: false, attributionControl: false })
+    const lat = 41.4044
+    const lng = 2.1553
+    map = L.map('leaflet-map', { center: [lat, lng], zoom: 16, zoomControl: false, attributionControl: false })
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, crossOrigin: true }).addTo(map)
     const customIcon = L.divIcon({
       html: `<div style="width:18px;height:18px;background:#4a8fe8;border:3px solid white;border-radius:50%;box-shadow:0 0 10px rgba(74,143,232,0.7);"></div>`,
       iconSize: [18, 18], iconAnchor: [9, 9], className: ''
     })
-    L.marker([lat, lng], { icon: customIcon }).addTo(map)
+    L.marker([lat, lng], { icon: customIcon })
+      .addTo(map)
+      .bindTooltip('✂️ The Barberist', {
+        permanent: true,
+        direction: 'top',
+        offset: [0, -12],
+        className: 'barber-tooltip'
+      })
   }, 200)
 })
 
@@ -168,7 +175,7 @@ const reservarReal = (barber: any) => {
   bookingStore.barberoImg = barber.fotoUrl || getFotoLocal(barber.id)
   bookingStore.barberoInitials = getNombre(barber).substring(0, 2).toUpperCase()
   bookingStore.barberoColor = '#1a3a5c'
-  router.push('/reservar')
+  router.push('/elegir-corte')
 }
 
 const reservar = (barber: any) => {
@@ -177,7 +184,7 @@ const reservar = (barber: any) => {
   bookingStore.barberoImg = barber.img
   bookingStore.barberoInitials = barber.name.substring(0, 2).toUpperCase()
   bookingStore.barberoColor = '#1a3a5c'
-  router.push('/reservar')
+  router.push('/elegir-corte')
 }
 </script>
 
