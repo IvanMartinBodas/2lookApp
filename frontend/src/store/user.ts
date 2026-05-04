@@ -7,6 +7,7 @@ export const userStore = reactive({
   id: null as number | null,
   rol: '',
   logueado: false,
+  token: '',
 })
 
 export const bookingStore = reactive({
@@ -22,7 +23,8 @@ export const bookingStore = reactive({
   pagado: false,
   fecha: '19 Dic',
   hora: '18:30 - 19:00',
-  desdeIA: false
+  desdeIA: false,
+  reservaId: null as number | null,
 })
 
 export function setUsuario(data: any) {
@@ -31,7 +33,12 @@ export function setUsuario(data: any) {
   userStore.email = data.email
   userStore.rol = data.rol
   userStore.logueado = true
-  sessionStorage.setItem('2look_user', JSON.stringify(data))
+  localStorage.setItem('2look_user', JSON.stringify(data))
+}
+
+export function guardarFotoPerfil(foto: string) {
+  userStore.photo = foto
+  localStorage.setItem('2look_photo_' + userStore.id, foto)
 }
 
 export function cerrarSesion() {
@@ -41,14 +48,18 @@ export function cerrarSesion() {
   userStore.rol = ''
   userStore.logueado = false
   userStore.photo = ''
-  sessionStorage.removeItem('2look_user')
+  userStore.token = ''
+  localStorage.removeItem('2look_user')
 }
 
 export function restaurarSesion() {
-  const saved = sessionStorage.getItem('2look_user')
+  const saved = localStorage.getItem('2look_user')
   if (saved) {
     try {
-      setUsuario(JSON.parse(saved))
+      const data = JSON.parse(saved)
+      setUsuario(data)
+      const foto = localStorage.getItem('2look_photo_' + data.id)
+      if (foto) userStore.photo = foto
     } catch {}
   }
 }
