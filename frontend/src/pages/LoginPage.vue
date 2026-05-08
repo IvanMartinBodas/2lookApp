@@ -22,8 +22,9 @@
                 v-model="email"
                 type="email"
                 class="app-input"
-                placeholder="nombreusuario@gmail.com"
+                placeholder="ejemplo@gmail.com"
                 :disabled="cargando"
+                @keyup.enter="login"
               />
             </div>
 
@@ -71,7 +72,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IonPage, IonContent, IonIcon, IonSpinner } from '@ionic/vue'
+import { IonPage, IonContent, IonIcon, IonSpinner, useIonRouter } from '@ionic/vue'
 import { eyeOutline, eyeOffOutline } from 'ionicons/icons'
 import { addIcons } from 'ionicons'
 import { useRouter } from 'vue-router'
@@ -81,6 +82,7 @@ import { BASE_URL } from '@/store/api'
 addIcons({ 'eye-outline': eyeOutline, 'eye-off-outline': eyeOffOutline })
 
 const router = useRouter()
+const ionRouter = useIonRouter()
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
@@ -111,7 +113,7 @@ const login = async () => {
     }
 
     setUsuario(data)
-    router.replace('/tabs/home')
+    window.location.replace('/tabs/home')
 
   } catch (e) {
     errorMsg.value = 'Sin conexión al servidor'
