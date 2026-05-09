@@ -26,7 +26,7 @@
                   :name="cita.liked ? 'heart' : 'heart-outline'"
                   class="heart"
                   :style="{ color: cita.liked ? '#eb445a' : 'rgba(255,255,255,0.4)' }"
-                  @click="cita.liked = !cita.liked"
+                  @click="toggleLike(cita)"
                 ></ion-icon>
                 <span class="mes">{{ cita.mes }}</span>
                 <span class="dia">{{ cita.dia }}</span>
@@ -107,7 +107,28 @@ const citaSeleccionada = ref<any>(null)
 
 const mesesNombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
+function getLikedIds(): Set<number> {
+  try {
+    const raw = localStorage.getItem('2look_liked_' + userStore.id)
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch { return new Set() }
+}
+
+function saveLikedIds(ids: Set<number>) {
+  localStorage.setItem('2look_liked_' + userStore.id, JSON.stringify([...ids]))
+}
+
+function toggleLike(cita: any) {
+  cita.liked = !cita.liked
+  const ids = getLikedIds()
+  if (cita.liked) ids.add(cita.id)
+  else ids.delete(cita.id)
+  saveLikedIds(ids)
+}
+
 onMounted(async () => {
+  const likedIds = getLikedIds()
+
   try {
     if (userStore.id) {
       const data = await reservaApi.getByCliente(userStore.id)
@@ -123,7 +144,7 @@ onMounted(async () => {
           mes: mesesNombres[d.getMonth()],
           dia: d.getDate().toString(),
           hora: `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`,
-          liked: false,
+          liked: likedIds.has(r.id),
           barberoId: r.barbero?.id,
         }
       })
@@ -132,16 +153,16 @@ onMounted(async () => {
 
   if (historial.value.length === 0) {
     historial.value = [
-      { id:  1, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Mayo',      dia: '3',  hora: '10:00', liked: true,  barberoId: null },
-      { id:  2, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Abril',     dia: '5',  hora: '11:00', liked: true,  barberoId: null },
-      { id:  3, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Marzo',     dia: '8',  hora: '10:30', liked: false, barberoId: null },
-      { id:  4, barber: 'Richard Jones', servicio: 'Low Fade',          img: '/assets/Rectangle__5.png', mes: 'Febrero',   dia: '10', hora: '09:00', liked: false, barberoId: null },
-      { id:  5, barber: 'Richard Jones', servicio: 'Low Fade',          img: '/assets/Rectangle__5.png', mes: 'Enero',     dia: '13', hora: '17:00', liked: true,  barberoId: null },
-      { id:  6, barber: 'Charles Smith', servicio: 'Burst Fade',        img: '/assets/Rectangle.png',    mes: 'Diciembre', dia: '9',  hora: '11:00', liked: true,  barberoId: null },
-      { id:  7, barber: 'Marc Andrew',   servicio: 'Corte Clásico',     img: '/assets/Rectangle__4.png', mes: 'Noviembre', dia: '11', hora: '09:30', liked: false, barberoId: null },
-      { id:  8, barber: 'Marc Andrew',   servicio: 'Corte Texturizado', img: '/assets/Rectangle__4.png', mes: 'Octubre',   dia: '14', hora: '16:00', liked: true,  barberoId: null },
-      { id:  9, barber: 'Charles Smith', servicio: 'Drop Fade',         img: '/assets/Rectangle.png',    mes: 'Septiembre',dia: '8',  hora: '10:00', liked: false, barberoId: null },
-      { id: 10, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Agosto',    dia: '12', hora: '12:00', liked: true,  barberoId: null },
+      { id:  1, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Mayo',      dia: '3',  hora: '10:00', liked: likedIds.has(1),  barberoId: null },
+      { id:  2, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Abril',     dia: '5',  hora: '11:00', liked: likedIds.has(2),  barberoId: null },
+      { id:  3, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Marzo',     dia: '8',  hora: '10:30', liked: likedIds.has(3),  barberoId: null },
+      { id:  4, barber: 'Richard Jones', servicio: 'Low Fade',          img: '/assets/Rectangle__5.png', mes: 'Febrero',   dia: '10', hora: '09:00', liked: likedIds.has(4),  barberoId: null },
+      { id:  5, barber: 'Richard Jones', servicio: 'Low Fade',          img: '/assets/Rectangle__5.png', mes: 'Enero',     dia: '13', hora: '17:00', liked: likedIds.has(5),  barberoId: null },
+      { id:  6, barber: 'Charles Smith', servicio: 'Burst Fade',        img: '/assets/Rectangle.png',    mes: 'Diciembre', dia: '9',  hora: '11:00', liked: likedIds.has(6),  barberoId: null },
+      { id:  7, barber: 'Marc Andrew',   servicio: 'Corte Clásico',     img: '/assets/Rectangle__4.png', mes: 'Noviembre', dia: '11', hora: '09:30', liked: likedIds.has(7),  barberoId: null },
+      { id:  8, barber: 'Marc Andrew',   servicio: 'Corte Texturizado', img: '/assets/Rectangle__4.png', mes: 'Octubre',   dia: '14', hora: '16:00', liked: likedIds.has(8),  barberoId: null },
+      { id:  9, barber: 'Charles Smith', servicio: 'Drop Fade',         img: '/assets/Rectangle.png',    mes: 'Septiembre',dia: '8',  hora: '10:00', liked: likedIds.has(9),  barberoId: null },
+      { id: 10, barber: 'Charles Smith', servicio: 'Taper Fade',        img: '/assets/Rectangle.png',    mes: 'Agosto',    dia: '12', hora: '12:00', liked: likedIds.has(10), barberoId: null },
     ]
   }
 
