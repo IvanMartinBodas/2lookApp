@@ -112,11 +112,12 @@ const continuarConServicio = () => {
   bookingStore.servicioId = servicioSeleccionado.value.id
   bookingStore.servicioNombre = servicioSeleccionado.value.nombre
   bookingStore.servicioPrecio = servicioSeleccionado.value.precio
-  router.push('/reservar')
+  router.push('/elegir-barbero')
 }
 
 const irAIA = () => {
-  router.push({ path: '/tabs/camara', query: { desde: 'reserva' } })
+  bookingStore.desdeIA = true
+  window.location.replace('/tabs/camara')
 }
 </script>
 
