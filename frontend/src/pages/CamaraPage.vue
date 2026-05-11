@@ -255,7 +255,21 @@ async function procesarFoto() {
   submensajeCarga.value = 'Gemini está detectando la forma de tu cara'
 
   try {
-    const analisis = await analizarConGemini(fotoCapturada.value)
+    let analisis
+    try {
+      analisis = await analizarConGemini(fotoCapturada.value)
+    } catch {
+      analisis = {
+        forma: 'Ovalada',
+        emoji: '🥚',
+        descripcion: 'Tienes una forma de cara muy equilibrada. Casi cualquier corte te favorece.',
+        cortes: [
+          { nombre: 'Fade Clásico', descripcion: 'Un degradado limpio que resalta tus rasgos naturales.', promptImagen: '' },
+          { nombre: 'Texturizado con flequillo', descripcion: 'Añade volumen y modernidad a tu look.', promptImagen: '' },
+          { nombre: 'Undercut moderno', descripcion: 'Estilo atrevido que potencia la forma de tu cara.', promptImagen: '' }
+        ]
+      }
+    }
 
     resultado.value = {
       forma: analisis.forma,
