@@ -302,7 +302,7 @@ async function analizarConGemini(dataUrl: string) {
       }
     )
 
-    if (res.status === 429) continue
+    if (res.status === 429 || res.status === 400 || res.status === 403) continue
 
     if (!res.ok) {
       const err = await res.json()
