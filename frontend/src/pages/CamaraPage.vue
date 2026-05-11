@@ -264,9 +264,9 @@ async function procesarFoto() {
         emoji: '🥚',
         descripcion: 'Tienes una forma de cara muy equilibrada. Casi cualquier corte te favorece.',
         cortes: [
-          { nombre: 'Fade Clásico', descripcion: 'Un degradado limpio que resalta tus rasgos naturales.', promptImagen: '', imagenUrl: 'https://tse2.mm.bing.net/th/id/OIP.cndEMZQ3vvlnalobj_GWFgHaJQ?pid=Api&P=0&h=180' },
-          { nombre: 'Texturizado con flequillo', descripcion: 'Añade volumen y modernidad a tu look.', promptImagen: '', imagenUrl: 'https://tse2.mm.bing.net/th/id/OIP.6cebUQ2trwGCtJ4HT397BQAAAA?pid=Api&P=0&h=180' },
-          { nombre: 'Undercut moderno', descripcion: 'Estilo atrevido que potencia la forma de tu cara.', promptImagen: '', imagenUrl: 'https://tse1.mm.bing.net/th/id/OIP.bGrX3nvAd-IMlaZIQIlLeQHaFU?pid=Api&P=0&h=180' }
+          { nombre: 'Fade Clásico', descripcion: 'Un degradado limpio que resalta tus rasgos naturales.', promptImagen: '', imagenUrl: 'https://i.imgur.com/5VFjsup.jpg' },
+          { nombre: 'Texturizado con flequillo', descripcion: 'Añade volumen y modernidad a tu look.', promptImagen: '', imagenUrl: 'https://i.imgur.com/K5doUYi.jpg' },
+          { nombre: 'Undercut moderno', descripcion: 'Estilo atrevido que potencia la forma de tu cara.', promptImagen: '', imagenUrl: 'https://i.imgur.com/O5P9UWI.jpg' }
         ]
       }
     }
