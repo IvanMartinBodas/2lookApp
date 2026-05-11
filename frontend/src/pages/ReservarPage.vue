@@ -39,7 +39,6 @@
 
             <div v-if="selectedTime" class="info-chip time-chip" @click="showTimePicker = true">
               <span>{{ selectedTime }}</span>
-              <span class="chip-edit">✎</span>
             </div>
             <div v-else-if="selectedDate" class="info-chip pick-time-chip" @click="showTimePicker = true">
               <span>Elige hora</span>
