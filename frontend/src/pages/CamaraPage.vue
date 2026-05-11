@@ -125,7 +125,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { IonPage, IonContent, IonButton, IonIcon, IonSpinner } from '@ionic/vue'
 import { sparklesOutline, cutOutline } from 'ionicons/icons'
-import { bookingStore, userStore } from '@/store/user'
+import { bookingStore, userStore, restaurarSesion } from '@/store/user'
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY
@@ -191,6 +191,8 @@ const resultado = ref<Resultado>({
 })
 
 onMounted(async () => {
+  restaurarSesion()
+  intentosRestantes.value = esAdmin() ? 99 : MAX_INTENTOS - getIntentosHoy()
   await iniciarCamara()
 })
 
