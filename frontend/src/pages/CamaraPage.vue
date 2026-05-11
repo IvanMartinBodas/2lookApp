@@ -444,7 +444,7 @@ function reiniciar() {
 <style scoped>
 ion-page { --background: #000; }
 
-.camara-container { display: flex; flex-direction: column; height: 100vh; background: #000; }
+.camara-container { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: #000; }
 .camara-preview { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .video-stream { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #111; }
 .camara-header { position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 48px 16px 12px; }
@@ -455,7 +455,7 @@ ion-page { --background: #000; }
 .intentos-badge { position: relative; z-index: 10; text-align: center; color: rgba(255,255,255,0.5); font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 0 0 12px; }
 .intentos-badge.warning { color: #f5c518; font-weight: 600; }
 .intentos-badge.agotado { color: rgba(255,100,100,0.85); font-weight: 600; }
-.controles { position: relative; z-index: 10; display: flex; justify-content: center; padding: 0 40px 60px; }
+.controles { position: relative; z-index: 10; display: flex; justify-content: center; padding: 0 40px calc(60px + env(safe-area-inset-bottom, 0px)); }
 .shutter { width: 78px; height: 78px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 3px solid #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .shutter:active .shutter-inner { transform: scale(0.9); }
 .shutter-inner { width: 62px; height: 62px; border-radius: 50%; background: #fff; transition: transform 0.1s; }
