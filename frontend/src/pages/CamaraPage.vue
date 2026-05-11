@@ -453,7 +453,7 @@ ion-page { --background: #000; }
 
 .resultado-container { height: 100vh; background: #f5f5f5; }
 .foto-visor { position: relative; height: 28vh; background: #1a1a2e; overflow: hidden; }
-.foto-real { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.foto-real { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 .foto-badge { position: absolute; bottom: 10px; left: 14px; background: rgba(0,0,0,0.65); border-radius: 20px; padding: 5px 12px; color: #fff; font-size: 12px; font-weight: 700; backdrop-filter: blur(6px); display: flex; align-items: center; gap: 6px; }
 .resultado-contenido { padding: 16px 16px 100px; display: flex; flex-direction: column; gap: 12px; }
 .forma-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 16px; padding: 12px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
