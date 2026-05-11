@@ -275,10 +275,9 @@ async function procesarFoto() {
 
 const GEMINI_MODELS = [
   { model: 'gemini-2.0-flash', api: 'v1beta' },
-  { model: 'gemini-2.0-flash-exp', api: 'v1beta' },
-  { model: 'gemini-1.5-flash', api: 'v1' },
-  { model: 'gemini-1.5-flash-latest', api: 'v1' },
-  { model: 'gemini-1.5-pro', api: 'v1' },
+  { model: 'gemini-1.5-flash', api: 'v1beta' },
+  { model: 'gemini-1.5-flash-8b', api: 'v1beta' },
+  { model: 'gemini-1.5-pro', api: 'v1beta' },
 ]
 
 async function analizarConGemini(dataUrl: string) {
