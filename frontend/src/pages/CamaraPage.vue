@@ -465,7 +465,7 @@ ion-page { --background: #000; }
 
 .corte-tarjeta { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 14px rgba(0,0,0,0.08); }
 .corte-imagen-wrap { width: 100%; height: 260px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.corte-imagen { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.corte-imagen { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .corte-imagen-loading, .corte-imagen-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 .corte-body { padding: 12px 16px 14px; }
 .corte-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
