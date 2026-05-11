@@ -275,13 +275,6 @@ async function procesarFoto() {
   }
 }
 
-const GEMINI_MODELS = [
-  { model: 'gemini-2.0-flash', api: 'v1beta' },
-  { model: 'gemini-1.5-flash', api: 'v1beta' },
-  { model: 'gemini-1.5-flash-8b', api: 'v1beta' },
-  { model: 'gemini-1.5-pro', api: 'v1beta' },
-]
-
 async function analizarConGemini(dataUrl: string) {
   const base64 = dataUrl.split(',')[1]
   const mimeType = dataUrl.split(';')[0].split(':')[1]
@@ -289,74 +282,40 @@ async function analizarConGemini(dataUrl: string) {
   const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra:
 {"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre corte 1","descripcion":"1-2 frases por qué le favorece","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 2","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 3","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"}]}`
 
-  let lastError = ''
-
-  for (const { model, api } of GEMINI_MODELS) {
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [
-              { inline_data: { mime_type: mimeType, data: base64 } },
-              { text: prompt }
-            ]}],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
-          })
-        }
-      )
-
-      if (!res.ok) {
-        const err = await res.json()
-        const msg = err?.error?.message || ''
-        const reintentable = msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED') ||
-          msg.includes('high demand') || msg.includes('UNAVAILABLE') || msg.includes('overloaded') ||
-          msg.includes('not found') || msg.includes('NOT_FOUND') ||
-          res.status === 429 || res.status === 503 || res.status === 404
-        if (reintentable) {
-          lastError = msg
-          await new Promise(r => setTimeout(r, 1000))
-          continue
-        }
-        throw new Error(`Gemini: ${msg || res.status}`)
-      }
-
-      const data = await res.json()
-      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-
-      let jsonStr = texto
-        .split('```json').join('')
-        .split('```').join('')
-        .trim()
-      const match = jsonStr.match(/\{[\s\S]*\}/)
-      if (match) jsonStr = match[0]
-
-      try {
-        return JSON.parse(jsonStr)
-      } catch {
-        try {
-          const repaired = jsonStr + '"}]}'
-          return JSON.parse(repaired)
-        } catch {
-          throw new Error('No se pudo parsear la respuesta de Gemini')
-        }
-      }
-
-    } catch (err: any) {
-      const reintentable = err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED') ||
-        err.message?.includes('high demand') || err.message?.includes('UNAVAILABLE') || err.message?.includes('overloaded')
-      if (reintentable) {
-        lastError = err.message
-        await new Promise(r => setTimeout(r, 1000))
-        continue
-      }
-      throw err
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { inline_data: { mime_type: mimeType, data: base64 } },
+          { text: prompt }
+        ]}],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+      })
     }
+  )
+
+  if (!res.ok) {
+    const err = await res.json()
+    const msg = err?.error?.message || ''
+    if (res.status === 429) throw new Error('Límite de peticiones alcanzado. Espera 1 minuto e inténtalo de nuevo.')
+    throw new Error(`Error al analizar: ${msg || res.status}`)
   }
 
-  throw new Error(`Quota agotada en todos los modelos. ${lastError}`)
+  const data = await res.json()
+  const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+
+  let jsonStr = texto.split('```json').join('').split('```').join('').trim()
+  const match = jsonStr.match(/\{[\s\S]*\}/)
+  if (match) jsonStr = match[0]
+
+  try {
+    return JSON.parse(jsonStr)
+  } catch {
+    throw new Error('No se pudo procesar la respuesta. Inténtalo de nuevo.')
+  }
 }
 
 async function generarImagenesCortes(cortes: any[]) {
