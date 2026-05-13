@@ -128,8 +128,8 @@ import { sparklesOutline, cutOutline } from 'ionicons/icons'
 import { bookingStore, userStore, restaurarSesion } from '@/store/user'
 
 const GEMINI_KEYS = [
-  import.meta.env.VITE_GEMINI_API_KEY,
   import.meta.env.VITE_GEMINI_API_KEY_2,
+  import.meta.env.VITE_GEMINI_API_KEY,
 ].filter(Boolean)
 const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY
 
