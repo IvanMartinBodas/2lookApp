@@ -247,6 +247,26 @@ function onFileSelected(e: Event) {
   reader.readAsDataURL(file)
 }
 
+function comprimirImagen(dataUrl: string, maxWidth = 800, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const ratio = img.width > maxWidth ? maxWidth / img.width : 1
+      const w = Math.round(img.width * ratio)
+      const h = Math.round(img.height * ratio)
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return reject(new Error('No canvas ctx'))
+      ctx.drawImage(img, 0, 0, w, h)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => reject(new Error('No se pudo cargar la imagen'))
+    img.src = dataUrl
+  })
+}
+
 async function procesarFoto() {
   if (intentosRestantes.value <= 0) return
   registrarIntento()
@@ -255,9 +275,17 @@ async function procesarFoto() {
   submensajeCarga.value = 'Gemini está detectando la forma de tu cara'
 
   try {
+    // Comprimir antes de mandar a Gemini para no quemar tokens
+    let dataUrlComprimida = fotoCapturada.value
+    try {
+      dataUrlComprimida = await comprimirImagen(fotoCapturada.value, 800, 0.85)
+    } catch (e) {
+      console.warn('No se pudo comprimir, se envía original', e)
+    }
+
     let analisis
     try {
-      analisis = await analizarConGemini(fotoCapturada.value)
+      analisis = await analizarConGemini(dataUrlComprimida)
     } catch {
       analisis = {
         forma: 'Ovalada',
@@ -300,40 +328,46 @@ async function analizarConGemini(dataUrl: string) {
   const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra:
 {"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre corte 1","descripcion":"1-2 frases por qué le favorece","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 2","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 3","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"}]}`
 
-  for (const key of GEMINI_KEYS) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [
-            { inline_data: { mime_type: mimeType, data: base64 } },
-            { text: prompt }
-          ]}],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
-        })
+  const MODELOS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b']
+
+  for (const modelo of MODELOS) {
+    for (const key of GEMINI_KEYS) {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [
+              { inline_data: { mime_type: mimeType, data: base64 } },
+              { text: prompt }
+            ]}],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+          })
+        }
+      )
+
+      if (res.status === 429 || res.status === 400 || res.status === 403 || res.status === 404) continue
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        const msg = err?.error?.message || ''
+        // Si es error de cuota o similar, prueba siguiente clave/modelo
+        if (msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate')) continue
+        throw new Error(`Error al analizar: ${msg || res.status}`)
       }
-    )
 
-    if (res.status === 429 || res.status === 400 || res.status === 403) continue
+      const data = await res.json()
+      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+      let jsonStr = texto.split('```json').join('').split('```').join('').trim()
+      const match = jsonStr.match(/\{[\s\S]*\}/)
+      if (match) jsonStr = match[0]
 
-    if (!res.ok) {
-      const err = await res.json()
-      const msg = err?.error?.message || ''
-      throw new Error(`Error al analizar: ${msg || res.status}`)
-    }
-
-    const data = await res.json()
-    const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-    let jsonStr = texto.split('```json').join('').split('```').join('').trim()
-    const match = jsonStr.match(/\{[\s\S]*\}/)
-    if (match) jsonStr = match[0]
-
-    try {
-      return JSON.parse(jsonStr)
-    } catch {
-      throw new Error('No se pudo procesar la respuesta. Inténtalo de nuevo.')
+      try {
+        return JSON.parse(jsonStr)
+      } catch {
+        throw new Error('No se pudo procesar la respuesta. Inténtalo de nuevo.')
+      }
     }
   }
 
