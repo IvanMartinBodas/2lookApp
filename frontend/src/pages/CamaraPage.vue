@@ -325,8 +325,8 @@ async function analizarConGemini(dataUrl: string) {
   const base64 = dataUrl.split(',')[1]
   const mimeType = dataUrl.split(';')[0].split(':')[1]
 
-  const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra. Para cada corte incluye un "promptIngles" describiendo el corte en inglés con detalles visuales para una IA de imágenes.
-{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre comercial del corte 1 (Ej: Fade Clásico, Buzz Cut, Quiff Desvanecido)","promptIngles":"Change only the hairstyle to a [descripción detallada en inglés del corte: long/short/textured, fade type, etc.], keep the exact same face, same skin, same eyes, same expression, same lighting, same background","descripcion":"1-2 frases por qué le favorece"},{"nombre":"nombre corte 2","promptIngles":"Change only the hairstyle to ...","descripcion":"descripción"},{"nombre":"nombre corte 3","promptIngles":"Change only the hairstyle to ...","descripcion":"descripción"}]}`
+  const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra. Los 3 cortes recomendados deben ser **muy diferentes entre sí visualmente**: uno corto, uno medio y uno con más volumen/largo, para que el usuario vea claramente las opciones. Para cada corte incluye un "promptIngles" describiendo el corte en inglés con detalles visuales para una IA de imágenes.
+{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"Corte CORTO con nombre comercial (Ej: Buzz Cut, Crew Cut, Caesar)","promptIngles":"Change only the hairstyle to a very short [descripción]: military buzz cut / crew cut, hair length around 1cm, keep the exact same face, same skin, same eyes, same expression, same lighting, same background","descripcion":"1-2 frases por qué le favorece"},{"nombre":"Corte MEDIO con nombre comercial (Ej: Fade con textura, Quiff)","promptIngles":"Change only the hairstyle to a medium-length textured hairstyle with fade sides, keep the exact same face, same skin, same eyes, same expression, same lighting, same background","descripcion":"descripción"},{"nombre":"Corte LARGO o con volumen (Ej: Pompadour, Slick Back largo)","promptIngles":"Change only the hairstyle to a long voluminous hairstyle with hair pushed back, keep the exact same face, same skin, same eyes, same expression, same lighting, same background","descripcion":"descripción"}]}`
 
   const MODELOS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
 
@@ -375,14 +375,8 @@ async function analizarConGemini(dataUrl: string) {
 }
 
 async function generarImagenesCortes(cortes: any[]) {
-  let fotoUrl = fotoCapturada.value
-  if (FAL_API_KEY && FAL_API_KEY !== 'TU_FAL_API_KEY_AQUI') {
-    try {
-      fotoUrl = await subirFotoAFal(fotoCapturada.value)
-    } catch {
-      fotoUrl = fotoCapturada.value
-    }
-  }
+  // Pasamos la foto directamente en base64, flux-kontext lo acepta
+  const fotoUrl = fotoCapturada.value
   await Promise.allSettled(
     cortes.map((corte: any, i: number) => generarImagenCorte(corte.promptIngles || `Change the hairstyle to ${corte.nombre}, keep the same face`, i, fotoUrl))
   )
