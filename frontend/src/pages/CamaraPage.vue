@@ -56,10 +56,6 @@
 
         <div class="foto-visor" :style="{ '--foto-bg': `url(${fotoCapturada})` }">
           <img v-if="fotoCapturada" :src="fotoCapturada" class="foto-real" />
-          <div class="foto-badge">
-            <ion-icon :icon="sparklesOutline" />
-            <span>Analizada con IA</span>
-          </div>
         </div>
 
         <div class="resultado-contenido">
