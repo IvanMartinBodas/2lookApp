@@ -325,8 +325,8 @@ async function analizarConGemini(dataUrl: string) {
   const base64 = dataUrl.split(',')[1]
   const mimeType = dataUrl.split(';')[0].split(':')[1]
 
-  const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra. Para cada corte, elige el "tipoEnum" más parecido de esta lista exacta: short_hair, medium_long_hair, long_hair, curly_hair, wavy_hair, bob_cut, pixie_cut, high_ponytail, bun.
-{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre comercial del corte 1 (Ej: Fade Clásico, Buzz Cut, Quiff)","tipoEnum":"valor exacto del enum","descripcion":"1-2 frases por qué le favorece"},{"nombre":"nombre corte 2","tipoEnum":"valor del enum","descripcion":"descripción"},{"nombre":"nombre corte 3","tipoEnum":"valor del enum","descripcion":"descripción"}]}`
+  const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra. Para cada corte incluye un "promptIngles" describiendo el corte en inglés con detalles visuales para una IA de imágenes.
+{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre comercial del corte 1 (Ej: Fade Clásico, Buzz Cut, Quiff Desvanecido)","promptIngles":"Change only the hairstyle to a [descripción detallada en inglés del corte: long/short/textured, fade type, etc.], keep the exact same face, same skin, same eyes, same expression, same lighting, same background","descripcion":"1-2 frases por qué le favorece"},{"nombre":"nombre corte 2","promptIngles":"Change only the hairstyle to ...","descripcion":"descripción"},{"nombre":"nombre corte 3","promptIngles":"Change only the hairstyle to ...","descripcion":"descripción"}]}`
 
   const MODELOS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
 
@@ -384,7 +384,7 @@ async function generarImagenesCortes(cortes: any[]) {
     }
   }
   await Promise.allSettled(
-    cortes.map((corte: any, i: number) => generarImagenCorte(corte.tipoEnum || 'short_hair', i, fotoUrl))
+    cortes.map((corte: any, i: number) => generarImagenCorte(corte.promptIngles || `Change the hairstyle to ${corte.nombre}, keep the same face`, i, fotoUrl))
   )
 }
 
@@ -402,7 +402,7 @@ async function subirFotoAFal(dataUrl: string): Promise<string> {
   return data.url
 }
 
-async function generarImagenCorte(tipoEnum: string, index: number, fotoUrl: string) {
+async function generarImagenCorte(promptIngles: string, index: number, fotoUrl: string) {
   if (!FAL_API_KEY || FAL_API_KEY === 'TU_FAL_API_KEY_AQUI') {
     await new Promise(r => setTimeout(r, 800))
     resultado.value.cortes[index].cargandoImagen = false
@@ -410,7 +410,7 @@ async function generarImagenCorte(tipoEnum: string, index: number, fotoUrl: stri
   }
 
   try {
-    const res = await fetch('https://fal.run/fal-ai/image-apps-v2/hair-change', {
+    const res = await fetch('https://fal.run/fal-ai/flux-pro/kontext', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${FAL_API_KEY}`,
@@ -418,8 +418,10 @@ async function generarImagenCorte(tipoEnum: string, index: number, fotoUrl: stri
       },
       body: JSON.stringify({
         image_url: fotoUrl,
-        target_hairstyle: tipoEnum,
-        hair_color: 'natural'
+        prompt: promptIngles,
+        guidance_scale: 3.5,
+        num_images: 1,
+        output_format: 'jpeg'
       })
     })
 
