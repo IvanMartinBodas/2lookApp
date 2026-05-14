@@ -54,7 +54,7 @@
     <div v-else-if="fase === 'resultado'" class="resultado-container">
       <ion-content :fullscreen="true">
 
-        <div class="foto-visor">
+        <div class="foto-visor" :style="{ '--foto-bg': `url(${fotoCapturada})` }">
           <img v-if="fotoCapturada" :src="fotoCapturada" class="foto-real" />
           <div class="foto-badge">
             <ion-icon :icon="sparklesOutline" />
@@ -336,10 +336,16 @@ Los 3 deben verse CLARAMENTE distintos en longitud y forma. Nada de cortes raros
 Responde SOLO JSON válido sin markdown:
 {"forma":"Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular","emoji":"emoji","descripcion":"1-2 frases motivadoras","cortes":[{"nombre":"nombre comercial corte 1","promptIngles":"...","descripcion":"1-2 frases por qué le favorece"},{"nombre":"corte 2","promptIngles":"...","descripcion":"..."},{"nombre":"corte 3","promptIngles":"...","descripcion":"..."}]}
 
-Cada "promptIngles" sigue esta plantilla EXACTA rellenando solo [CORTE]:
-"This is a strict hair-only edit. Replace ONLY the hair on the head with [CORTE — describe length in cm, top hair direction (forward/up/side), texture, sides (faded or not), fringe presence and direction. Realistic 2026 young men's haircut, natural barbershop look, not exaggerated, not cartoonish]. Keep the EXACT SAME natural hair color as the original photo. EVERYTHING else is pixel-locked. DO NOT modify the face: keep identical eyebrows shape and color, identical eyes shape size and color, identical nose, lips, jawline, chin, ears, skin tone, skin texture, age and expression. Do not add any facial hair (no beard, no mustache, no goatee, no stubble, no shadow). DO NOT modify neck, shoulders, clothing, background or lighting. DO NOT add glow, brightness, beauty filter, skin smoothing, HDR, sharpening or color grading. Same camera angle, same exposure, same brightness, same contrast, same sharpness, same color tone, same image quality. The result is the exact same photo with ONLY the hair on top of the head changed."
+Para CORTE 1 (CORTO/RAPADO) usa esta plantilla rellenando solo [DETALLE]:
+"This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: buzz cut OR crew cut, hair length 3-8mm uniform on top, fade type on sides]. Hair must be VERY SHORT and lie flat on the scalp — no fringe, no volume, no styling, looks freshly shaved. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Same lighting, exposure, contrast, background, clothes."
 
-IMPORTANTE: el [CORTE] de cada uno debe ser visualmente MUY diferente. El 1 corto rapado, el 2 con flequillo cayendo adelante, el 3 con volumen hacia arriba o un lado. No describas tres cortes parecidos.`
+Para CORTE 2 (FLEQUILLO HACIA DELANTE) usa esta plantilla:
+"This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: French Crop OR Edgar OR Textured Fringe, hair length 3-5cm on top, straight blunt fringe falling FORWARD over the forehead and partially covering it, sides faded short]. The fringe must clearly cover the upper part of the forehead — hair pointing forward, NOT pushed back, NOT to the side. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Same lighting, exposure, contrast, background, clothes."
+
+Para CORTE 3 (VOLUMEN ARRIBA O LATERAL) usa esta plantilla:
+"This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: low quiff OR pompadour bajo OR side part with volume OR slick back corto, hair length 5-8cm on top, hair styled UPWARD with low volume OR swept to ONE SIDE with a defined parting, sides faded short]. Forehead is FULLY VISIBLE and clear — NO fringe falling forward. Hair direction is up OR to the side. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Same lighting, exposure, contrast, background, clothes."
+
+IMPORTANTE: los 3 cortes deben verse claramente distintos. El 1 = pelo rapado pegado al cráneo, el 2 = flequillo cayendo sobre la frente, el 3 = frente despejada con volumen o pelo de lado.`
 
   const MODELOS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
 
@@ -492,7 +498,8 @@ ion-page { --background: #000; }
 
 .resultado-container { height: 100vh; background: #f5f5f5; }
 .foto-visor { position: relative; height: 32vh; background: #1a1a2e; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.foto-real { max-width: 100%; max-height: 100%; width: auto; height: 100%; object-fit: contain; display: block; }
+.foto-visor::before { content: ''; position: absolute; inset: 0; background-image: var(--foto-bg); background-size: cover; background-position: center; filter: blur(28px) brightness(0.55); transform: scale(1.15); z-index: 0; }
+.foto-real { position: relative; z-index: 1; max-width: 100%; max-height: 100%; width: auto; height: 100%; object-fit: contain; display: block; }
 .foto-badge { position: absolute; bottom: 10px; left: 14px; background: rgba(0,0,0,0.65); border-radius: 20px; padding: 5px 12px; color: #fff; font-size: 12px; font-weight: 700; backdrop-filter: blur(6px); display: flex; align-items: center; gap: 6px; }
 .resultado-contenido { padding: 16px 16px 100px; display: flex; flex-direction: column; gap: 12px; }
 .forma-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 16px; padding: 12px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
