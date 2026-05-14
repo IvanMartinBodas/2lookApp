@@ -410,7 +410,7 @@ async function generarImagenCorte(promptIngles: string, index: number, fotoUrl: 
   }
 
   try {
-    const res = await fetch('https://fal.run/fal-ai/flux-pro/kontext', {
+    const res = await fetch('https://fal.run/fal-ai/flux-kontext/dev', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${FAL_API_KEY}`,
