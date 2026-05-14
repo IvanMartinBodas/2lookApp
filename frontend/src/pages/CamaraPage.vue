@@ -357,7 +357,7 @@ IMPORTANTE: los 3 cortes son CORTOS modernos realistas. 1 = rapado uniforme, 2 =
               { inline_data: { mime_type: mimeType, data: base64 } },
               { text: prompt }
             ]}],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } }
+            generationConfig: { temperature: 0.3, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } }
           })
         }
       )
