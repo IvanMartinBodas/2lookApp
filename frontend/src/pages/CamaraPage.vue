@@ -321,13 +321,13 @@ async function analizarConGemini(dataUrl: string) {
   const base64 = dataUrl.split(',')[1]
   const mimeType = dataUrl.split(';')[0].split(':')[1]
 
-  const prompt = `Eres un barbero profesional de cortes de hombre joven 2026 (España). Recomienda 3 cortes ACTUALES y DE MODA muy DIFERENTES entre sí:
+  const prompt = `Eres un barbero profesional de cortes de hombre joven 2026 (España). Recomienda 3 cortes REALES, NORMALES, los que pediría un chico de 18-25 años en una barbería actual. Nada exagerado, nada de pompadours grandes, nada de bowl cuts, nada de Elvis. Todos los cortes son CORTOS o MUY CORTOS con fade en los lados, solo varía la textura y longitud del top:
 
-CORTE 1 → MUY CORTO (3-8mm en toda la cabeza): Buzz Cut o Crew Cut con o sin Mid Fade.
-CORTE 2 → MEDIO CON FLEQUILLO HACIA DELANTE (3-5cm arriba, lados rapados/fade): Edgar, French Crop o Textured Fringe.
-CORTE 3 → MEDIO HACIA ARRIBA/LATERAL (5-8cm arriba, lados con fade): Quiff bajo, Pompadour moderno bajo, Side Part con volumen ligero o Slick Back corto.
+CORTE 1 → BUZZ CUT: pelo uniforme 3-6mm en toda la cabeza, lados con mid fade.
+CORTE 2 → CREW CUT TEXTURIZADO: pelo 1-2cm arriba con textura natural, peinado hacia delante de forma muy sutil, lados con mid fade. NO flequillo grande, NO bowl cut.
+CORTE 3 → MID FADE CON TEXTURA CORTA Y FLEQUILLO PEQUEÑO: pelo 2-3cm arriba con textura desordenada natural, pequeño flequillo lateral sutil, lados con mid fade. NO volumen alto, NO pompadour, NO Elvis.
 
-Los 3 deben verse CLARAMENTE distintos en longitud y forma. Nada de cortes raros, anime, mullets exagerados, ni estilos años 80.
+Los 3 deben verse realistas y achievable en una barbería normal española.
 
 Responde SOLO JSON válido sin markdown:
 {"forma":"Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular","emoji":"emoji","descripcion":"1-2 frases motivadoras","cortes":[{"nombre":"nombre comercial corte 1","promptIngles":"...","descripcion":"1-2 frases por qué le favorece"},{"nombre":"corte 2","promptIngles":"...","descripcion":"..."},{"nombre":"corte 3","promptIngles":"...","descripcion":"..."}]}
@@ -335,13 +335,13 @@ Responde SOLO JSON válido sin markdown:
 Para CORTE 1 (CORTO/RAPADO) usa esta plantilla rellenando solo [DETALLE]:
 "This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: buzz cut OR crew cut, hair length 3-8mm uniform on top, fade type on sides]. Hair must be VERY SHORT and lie flat on the scalp — no fringe, no volume, no styling, looks freshly shaved. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Preserve the EXACT SAME framing, composition, zoom level and crop as the original photo — do not zoom in on the face, do not recrop, keep the same body visible. Same lighting, exposure, contrast, background, clothes."
 
-Para CORTE 2 (FLEQUILLO HACIA DELANTE) usa esta plantilla:
-"This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: French Crop OR Edgar OR Textured Fringe, hair length 3-5cm on top, textured fringe falling FORWARD over the forehead, sides faded short]. The fringe must be TEXTURED with visible separation between strands, NOT a flat solid block of hair. NOT a bowl cut. NOT a mushroom cut. Hair pointing forward, NOT pushed back, NOT to the side. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Preserve the EXACT SAME framing, composition, zoom level and crop as the original photo — do not zoom in on the face, do not recrop, keep the same body visible. Same lighting, exposure, contrast, background, clothes."
+Para CORTE 2 (CREW CUT TEXTURIZADO) usa esta plantilla:
+"This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: short textured crew cut, hair length 1-2cm on top with natural messy texture, slightly pushed forward in a SUBTLE way, sides with mid fade]. The top must be VERY SHORT (1-2cm max), NOT a fringe covering the forehead, NOT a bowl cut, NOT a mushroom shape. Forehead stays mostly visible. Hair has natural texture, not solid block. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Preserve the EXACT SAME framing, composition, zoom level and crop as the original photo — do not zoom in on the face, do not recrop, keep the same body visible. Same lighting, exposure, contrast, background, clothes."
 
-Para CORTE 3 (VOLUMEN ARRIBA O LATERAL) usa esta plantilla:
-"This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: low quiff OR pompadour bajo OR side part with volume OR slick back corto, hair length 5-8cm on top, hair styled UPWARD with low volume OR swept to ONE SIDE with a defined parting, sides faded short]. Forehead is FULLY VISIBLE and clear — NO fringe falling forward. Hair direction is up OR to the side. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Preserve the EXACT SAME framing, composition, zoom level and crop as the original photo — do not zoom in on the face, do not recrop, keep the same body visible. Same lighting, exposure, contrast, background, clothes."
+Para CORTE 3 (MID FADE CON TEXTURA CORTA) usa esta plantilla:
+"This is a strict hair-only edit. Replace the hair with a [DETALLE — describe specifically: short modern haircut with mid fade on sides, hair length 2-3cm on top with natural messy texture, small subtle side fringe, hair styled naturally not super defined]. The top must be SHORT (2-3cm max), NO high volume, NO pompadour, NO Elvis-style quiff, NO dramatic styling. Just a natural modern short haircut a young man would actually wear daily. Keep the EXACT SAME natural hair color. Face is pixel-locked: identical eyebrows, eyes, nose, lips, jawline, chin, skin, age, expression. No beard, no mustache, no stubble. No glow, no beauty filter, no skin smoothing. Preserve the EXACT SAME framing, composition, zoom level and crop as the original photo — do not zoom in on the face, do not recrop, keep the same body visible. Same lighting, exposure, contrast, background, clothes."
 
-IMPORTANTE: los 3 cortes deben verse claramente distintos. El 1 = pelo rapado pegado al cráneo, el 2 = flequillo cayendo sobre la frente, el 3 = frente despejada con volumen o pelo de lado.`
+IMPORTANTE: los 3 cortes son CORTOS modernos realistas. 1 = rapado uniforme, 2 = un poco más largo con textura sutil, 3 = un pelín más largo con textura desordenada natural. Todos achievables en barbería normal.`
 
   const MODELOS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
 
