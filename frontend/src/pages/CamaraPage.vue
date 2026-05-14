@@ -342,7 +342,7 @@ async function analizarConGemini(dataUrl: string) {
               { inline_data: { mime_type: mimeType, data: base64 } },
               { text: prompt }
             ]}],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+            generationConfig: { temperature: 0.3, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } }
           })
         }
       )
