@@ -325,23 +325,21 @@ async function analizarConGemini(dataUrl: string) {
   const base64 = dataUrl.split(',')[1]
   const mimeType = dataUrl.split(';')[0].split(':')[1]
 
-  const prompt = `Eres un barbero profesional especializado en cortes de hombre joven actuales (España 2026). Mirando la foto, recomienda 3 cortes REALES y de MODA HOY — los que llevan los chicos de 18-30 años en barberías modernas. Solo cortes NORMALES y NATURALES, NUNCA cortes extravagantes, futuristas, anime, mullets exagerados, pompadours grandes ni estilos años 80. Los 3 cortes deben ser claramente DIFERENTES entre sí en longitud y forma.
+  const prompt = `Eres un barbero profesional de cortes de hombre joven 2026 (España). Recomienda 3 cortes ACTUALES y DE MODA muy DIFERENTES entre sí:
 
-Ejemplos de cortes válidos según forma de cara:
-- Mid Fade con textura corta arriba
-- Burst Fade con pelo medio arriba peinado adelante
-- Crop francés (French Crop) con flequillo recto corto
-- Edgar / Takuache (flequillo recto, lados rapados)
-- Buzz Cut o Crew Cut
-- Side part moderno con textura
-- Two-block coreano
-- Textured fringe lateral
+CORTE 1 → MUY CORTO (3-8mm en toda la cabeza): Buzz Cut o Crew Cut con o sin Mid Fade.
+CORTE 2 → MEDIO CON FLEQUILLO HACIA DELANTE (3-5cm arriba, lados rapados/fade): Edgar, French Crop o Textured Fringe.
+CORTE 3 → MEDIO HACIA ARRIBA/LATERAL (5-8cm arriba, lados con fade): Quiff bajo, Pompadour moderno bajo, Side Part con volumen ligero o Slick Back corto.
 
-Responde SOLO con JSON válido (sin markdown ni texto extra):
-{"forma":"Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular","emoji":"emoji apropiado","descripcion":"1-2 frases motivadoras sobre la forma","cortes":[{"nombre":"nombre comercial en español del corte 1","promptIngles":"[descripción muy detallada en inglés del corte específico para una IA de edición de imágenes]","descripcion":"1-2 frases por qué le favorece"},{"nombre":"corte 2","promptIngles":"...","descripcion":"..."},{"nombre":"corte 3","promptIngles":"...","descripcion":"..."}]}
+Los 3 deben verse CLARAMENTE distintos en longitud y forma. Nada de cortes raros, anime, mullets exagerados, ni estilos años 80.
 
-Cada "promptIngles" debe seguir EXACTAMENTE esta plantilla rellenando solo [CORTE]:
-"This is a strict hair-only edit. Replace ONLY the hair on the head with [CORTE — describe length in cm, top texture, sides fade or not, fringe direction. Modern realistic 2026 young men's haircut, natural barbershop look, NOT exaggerated, NOT voluminous, hair sits close to the scalp]. Keep the EXACT SAME natural hair color as the original photo (do not lighten, do not darken, do not change tone). EVERYTHING else in the image is pixel-locked and must stay 100% identical. DO NOT modify the face in any way: do not change the eyebrows shape or color, do not darken them, do not change eye shape, color or size, do not change the nose, do not change the lips, do not change the jawline, do not change the chin, do not stretch or reshape the face, do not change the skin tone or texture, do not smooth or retouch the skin, do not change the age, do not change the expression, do not add ANY facial hair (no beard, no mustache, no goatee, no stubble, no 5 o'clock shadow). DO NOT modify the neck, shoulders, clothing, lighting, shadows or background. DO NOT add any glow, brightness, shine, beauty filter, skin smoothing, HDR effect, sharpening or color grading. Preserve the same camera angle, same framing, same exposure, same brightness, same contrast, same sharpness, same color tone and same image quality as the original. The result must look exactly like the original photo (same raw look, same selfie quality) with ONLY the hair replaced."`
+Responde SOLO JSON válido sin markdown:
+{"forma":"Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular","emoji":"emoji","descripcion":"1-2 frases motivadoras","cortes":[{"nombre":"nombre comercial corte 1","promptIngles":"...","descripcion":"1-2 frases por qué le favorece"},{"nombre":"corte 2","promptIngles":"...","descripcion":"..."},{"nombre":"corte 3","promptIngles":"...","descripcion":"..."}]}
+
+Cada "promptIngles" sigue esta plantilla EXACTA rellenando solo [CORTE]:
+"This is a strict hair-only edit. Replace ONLY the hair on the head with [CORTE — describe length in cm, top hair direction (forward/up/side), texture, sides (faded or not), fringe presence and direction. Realistic 2026 young men's haircut, natural barbershop look, not exaggerated, not cartoonish]. Keep the EXACT SAME natural hair color as the original photo. EVERYTHING else is pixel-locked. DO NOT modify the face: keep identical eyebrows shape and color, identical eyes shape size and color, identical nose, lips, jawline, chin, ears, skin tone, skin texture, age and expression. Do not add any facial hair (no beard, no mustache, no goatee, no stubble, no shadow). DO NOT modify neck, shoulders, clothing, background or lighting. DO NOT add glow, brightness, beauty filter, skin smoothing, HDR, sharpening or color grading. Same camera angle, same exposure, same brightness, same contrast, same sharpness, same color tone, same image quality. The result is the exact same photo with ONLY the hair on top of the head changed."
+
+IMPORTANTE: el [CORTE] de cada uno debe ser visualmente MUY diferente. El 1 corto rapado, el 2 con flequillo cayendo adelante, el 3 con volumen hacia arriba o un lado. No describas tres cortes parecidos.`
 
   const MODELOS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
 
@@ -493,8 +491,8 @@ ion-page { --background: #000; }
 .cargando-subtexto { color: rgba(255,255,255,0.6); font-size: 14px; text-align: center; padding: 0 40px; margin: 0; }
 
 .resultado-container { height: 100vh; background: #f5f5f5; }
-.foto-visor { position: relative; height: 28vh; background: #1a1a2e; overflow: hidden; }
-.foto-real { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+.foto-visor { position: relative; height: 32vh; background: #1a1a2e; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.foto-real { max-width: 100%; max-height: 100%; width: auto; height: 100%; object-fit: contain; display: block; }
 .foto-badge { position: absolute; bottom: 10px; left: 14px; background: rgba(0,0,0,0.65); border-radius: 20px; padding: 5px 12px; color: #fff; font-size: 12px; font-weight: 700; backdrop-filter: blur(6px); display: flex; align-items: center; gap: 6px; }
 .resultado-contenido { padding: 16px 16px 100px; display: flex; flex-direction: column; gap: 12px; }
 .forma-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 16px; padding: 12px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
