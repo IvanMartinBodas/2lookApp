@@ -280,9 +280,11 @@ async function procesarFoto() {
     }
 
     let analisis
+    let esFallback = false
     try {
       analisis = await analizarConGemini(dataUrlComprimida)
     } catch {
+      esFallback = true
       analisis = {
         forma: 'Ovalada',
         emoji: '🥚',
@@ -308,7 +310,7 @@ async function procesarFoto() {
     }
 
     fase.value = 'resultado'
-    generarImagenesCortes(analisis.cortes)
+    if (!esFallback) generarImagenesCortes(analisis.cortes)
 
   } catch (err: any) {
     console.error(err)
