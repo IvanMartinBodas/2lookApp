@@ -325,8 +325,8 @@ async function analizarConGemini(dataUrl: string) {
   const base64 = dataUrl.split(',')[1]
   const mimeType = dataUrl.split(';')[0].split(':')[1]
 
-  const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra:
-{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre corte 1","descripcion":"1-2 frases por qué le favorece","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 2","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"},{"nombre":"nombre corte 3","descripcion":"descripción","promptImagen":"portrait photo of the same person with [nombre] hairstyle, full head visible including hair on top, realistic barbershop photo, face identical, only hairstyle changed, sharp focus, studio lighting"}]}`
+  const prompt = `Eres un experto en estética y barbería. Analiza esta foto y responde SOLO con JSON válido, sin markdown ni texto extra. Para cada corte, elige el "tipoEnum" más parecido de esta lista exacta: short_hair, medium_long_hair, long_hair, curly_hair, wavy_hair, bob_cut, pixie_cut, high_ponytail, bun.
+{"forma":"Nombre forma cara (Ovalada/Redonda/Cuadrada/Rectangular/Corazón/Diamante/Triangular)","emoji":"emoji representativo","descripcion":"1-2 frases motivadoras sobre la forma detectada","cortes":[{"nombre":"nombre comercial del corte 1 (Ej: Fade Clásico, Buzz Cut, Quiff)","tipoEnum":"valor exacto del enum","descripcion":"1-2 frases por qué le favorece"},{"nombre":"nombre corte 2","tipoEnum":"valor del enum","descripcion":"descripción"},{"nombre":"nombre corte 3","tipoEnum":"valor del enum","descripcion":"descripción"}]}`
 
   const MODELOS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
 
@@ -384,7 +384,7 @@ async function generarImagenesCortes(cortes: any[]) {
     }
   }
   await Promise.allSettled(
-    cortes.map((corte: any, i: number) => generarImagenCorte(corte.promptImagen, i, fotoUrl))
+    cortes.map((corte: any, i: number) => generarImagenCorte(corte.tipoEnum || 'short_hair', i, fotoUrl))
   )
 }
 
@@ -402,7 +402,7 @@ async function subirFotoAFal(dataUrl: string): Promise<string> {
   return data.url
 }
 
-async function generarImagenCorte(prompt: string, index: number, fotoUrl: string) {
+async function generarImagenCorte(tipoEnum: string, index: number, fotoUrl: string) {
   if (!FAL_API_KEY || FAL_API_KEY === 'TU_FAL_API_KEY_AQUI') {
     await new Promise(r => setTimeout(r, 800))
     resultado.value.cortes[index].cargandoImagen = false
@@ -410,7 +410,7 @@ async function generarImagenCorte(prompt: string, index: number, fotoUrl: string
   }
 
   try {
-    const res = await fetch('https://fal.run/fal-ai/flux/schnell/image-to-image', {
+    const res = await fetch('https://fal.run/fal-ai/image-apps-v2/hair-change', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${FAL_API_KEY}`,
@@ -418,18 +418,14 @@ async function generarImagenCorte(prompt: string, index: number, fotoUrl: string
       },
       body: JSON.stringify({
         image_url: fotoUrl,
-        prompt: prompt,
-        negative_prompt: 'deformed, blurry, bad anatomy, disfigured, cropped head, missing hair, ugly, low quality',
-        strength: 0.45,
-        num_inference_steps: 8,
-        num_images: 1,
-        image_size: 'square_hd'
+        target_hairstyle: tipoEnum,
+        hair_color: 'natural'
       })
     })
 
     if (!res.ok) throw new Error(`fal.ai ${res.status}`)
     const data = await res.json()
-    const url = data?.images?.[0]?.url
+    const url = data?.images?.[0]?.url || data?.image?.url
     if (url) resultado.value.cortes[index].imagenUrl = url
 
   } catch (err) {
