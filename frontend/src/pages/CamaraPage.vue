@@ -386,8 +386,13 @@ Los 3 cortes obligatoriamente distintos:
 }
 
 async function generarImagenesCortes(cortes: any[]) {
-  // Pasamos la foto directamente en base64, flux-kontext lo acepta
-  const fotoUrl = fotoCapturada.value
+  // Comprimir la foto antes de mandarla a fal.ai (en Android sale enorme y la rechaza)
+  let fotoUrl = fotoCapturada.value
+  try {
+    fotoUrl = await comprimirImagen(fotoCapturada.value, 800, 0.85)
+  } catch (e) {
+    console.warn('No se pudo comprimir para fal.ai, se envía original', e)
+  }
   await Promise.allSettled(
     cortes.map((corte: any, i: number) => generarImagenCorte(corte.promptIngles || `Change the hairstyle to ${corte.nombre}, keep the same face`, i, fotoUrl))
   )
