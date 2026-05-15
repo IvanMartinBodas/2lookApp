@@ -56,7 +56,7 @@
           <p>Sin resultados para "{{ query }}"</p>
         </div>
 
-        <!-- Búsquedas recientes (solo cuando no hay query) -->
+
         <div v-if="!query" class="recientes-section">
           <div class="recientes-header">
             <span class="recientes-title">Búsquedas recientes</span>
@@ -140,8 +140,9 @@ function getFotoPorNombre(nombre: string): string {
 }
 
 let todosBarberos: any[] = []
+let cargaPromise: Promise<void> | null = null
 
-onMounted(async () => {
+async function cargarBarberos() {
   try {
     const data = await barberoApi.getAll()
     todosBarberos = data.map((b: any) => ({
@@ -160,10 +161,16 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  cargaPromise = cargarBarberos()
 })
 
-function buscar() {
+async function buscar() {
   if (!query.value.trim()) { resultados.value = []; return }
+  // Esperar a que los barberos terminen de cargar antes de filtrar
+  if (cargaPromise) await cargaPromise
   resultados.value = todosBarberos.filter(b =>
     b.name.toLowerCase().includes(query.value.toLowerCase())
   )
