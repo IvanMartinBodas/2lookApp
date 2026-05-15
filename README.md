@@ -7,21 +7,29 @@ La idea salió de algo que nos pasa a todos: vas a la barbería, te preguntan qu
 Y de paso puedes reservar cita con un barbero, pagar con Stripe y todo el rollo.
 
 Tecnologías que uso
+
+
 Frontend
 
 Ionic + Vue 3
 Capacitor (para acceso a cámara y generar el APK)
 Pinia para el estado
 Desplegado en Vercel
+
+
 Backend
 
 Spring Boot (Java 21)
 Spring Data JPA + Hibernate
 Spring Security para CORS
 Desplegado en Render con Docker
+
+
 Base de datos
 
 PostgreSQL en Aiven Cloud
+
+
 IA e imágenes
 
 Gemini (análisis facial)
