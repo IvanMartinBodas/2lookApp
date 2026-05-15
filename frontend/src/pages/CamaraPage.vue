@@ -203,7 +203,7 @@ onUnmounted(() => {
 async function iniciarCamara() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     })
     if (videoEl.value) videoEl.value.srcObject = stream
@@ -257,6 +257,28 @@ function comprimirImagen(dataUrl: string, maxWidth = 800, quality = 0.85): Promi
       if (!ctx) return reject(new Error('No canvas ctx'))
       ctx.drawImage(img, 0, 0, w, h)
       resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => reject(new Error('No se pudo cargar la imagen'))
+    img.src = dataUrl
+  })
+}
+
+// Recorta la foto a un cuadrado centrado donde está la cara (en el óvalo guía)
+function recortarParaFal(dataUrl: string, tam = 768): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const lado = Math.min(img.width, img.height)
+      // Centrado horizontal, ligeramente arriba para incluir más cara
+      const sx = (img.width - lado) / 2
+      const sy = Math.max(0, (img.height - lado) / 2 - lado * 0.05)
+      const canvas = document.createElement('canvas')
+      canvas.width = tam
+      canvas.height = tam
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return reject(new Error('No canvas ctx'))
+      ctx.drawImage(img, sx, sy, lado, lado, 0, 0, tam, tam)
+      resolve(canvas.toDataURL('image/jpeg', 0.9))
     }
     img.onerror = () => reject(new Error('No se pudo cargar la imagen'))
     img.src = dataUrl
@@ -332,7 +354,7 @@ async function analizarConGemini(dataUrl: string) {
 ]}
 
 Cada promptIngles debe seguir EXACTAMENTE esta plantilla (solo cambia el [CORTE]):
-"Change the hairstyle to a [CORTE — describe in 1 short sentence: name, length on top, sides fade or not, fringe direction]. Keep the person's face, eyes, eyebrows, skin and expression identical to the original photo. Clean-shaven, no beard, no mustache. Same lighting, same background, same clothes, same framing."
+"Portrait photo, head and shoulders shot, full face centered and fully visible including forehead, eyes, nose, mouth and chin. Change only the hairstyle to a [CORTE — describe in 1 short sentence: name, length on top, sides fade or not, fringe direction]. Keep the exact same face, facial features, skin, expression and any existing facial hair identical to the original photo. Same lighting, same background, same clothes."
 
 Los 3 cortes obligatoriamente distintos:
 - Corte 1: BUZZ CUT (rapado 3-6mm, fade lateral).
@@ -344,10 +366,10 @@ Los 3 cortes obligatoriamente distintos:
   for (const modelo of MODELOS) {
     for (const key of GEMINI_KEYS) {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
           body: JSON.stringify({
             contents: [{ parts: [
               { inline_data: { mime_type: mimeType, data: base64 } },
@@ -386,12 +408,12 @@ Los 3 cortes obligatoriamente distintos:
 }
 
 async function generarImagenesCortes(cortes: any[]) {
-  // Comprimir la foto antes de mandarla a fal.ai (en Android sale enorme y la rechaza)
+  // Recortar la foto a un cuadrado centrado en la cara para que FLUX no la deje descentrada
   let fotoUrl = fotoCapturada.value
   try {
-    fotoUrl = await comprimirImagen(fotoCapturada.value, 800, 0.85)
+    fotoUrl = await recortarParaFal(fotoCapturada.value, 768)
   } catch (e) {
-    console.warn('No se pudo comprimir para fal.ai, se envía original', e)
+    console.warn('No se pudo recortar para fal.ai, se envía original', e)
   }
   await Promise.allSettled(
     cortes.map((corte: any, i: number) => generarImagenCorte(corte.promptIngles || `Change the hairstyle to ${corte.nombre}, keep the same face`, i, fotoUrl))
